@@ -1,0 +1,35 @@
+{
+  "name": "d3-timer",
+  "version": "0.0.1",
+  "description": "",
+  "keywords": [
+    "d3",
+    "timer",
+    "transition",
+    "animation",
+    "requestAnimationFrame"
+  ],
+  "homepage": "https://github.com/d3/d3-timer",
+  "license": "BSD-3-Clause",
+  "author": {
+    "name": "Mike Bostock",
+    "url": "http://bost.ocks.org/mike"
+  },
+  "main": "build/timer",
+  "jsnext:main": "index",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/d3/d3-timer.git"
+  },
+  "scripts": {
+    "pretest": "mkdir -p build && d3-bundler --polyfill-raf --format=umd --name=timer -- index.js > build/timer.js",
+    "test": "faucet `find test -name '*-test.js'`",
+    "prepublish": "npm run test && uglifyjs build/timer.js -c -m -o build/timer.min.js"
+  },
+  "devDependencies": {
+    "d3-bundler": "~0.2.6",
+    "faucet": "0.0",
+    "tape": "4",
+    "uglifyjs": "2"
+  }
+}
