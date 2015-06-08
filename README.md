@@ -25,7 +25,7 @@ timer(function(elapsed, time) {
 }, 150);
 ```
 
-This produces the following console output:
+This produced the following console output:
 
 ```
 6 1433806724202
