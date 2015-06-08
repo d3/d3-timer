@@ -4,15 +4,13 @@ An efficient queue capable of managing thousands of concurrent animations. Also 
 
 Changes from D3 3.x:
 
+* Timer callbacks are now passed the current time as a second argument, in addition to the elapsed time; this is useful for precise scheduling of secondary timers.
+
 * A new [timerReplace](#timerReplace) method has been added to replace the current timer within a timer callback.
 
-* The timer.flush method has been renamed [timerFlush](#timerFlush).
+* The timer.flush method has been renamed [timerFlush](#timerFlush). This method now accepts an optional *time* argument representing the current time, and returns the time of the earliest next timer. Calling this method within a timer callback no longer causes a crash.
 
-* Calling [timerFlush](#timerFlush) within a timer callback no longer causes a crash.
-
-* Calling [timer](#timer) within a timer callback no longer makes a duplicate requestAnimationFrame.
-
-* Timer callbacks are now passed the current time as a second argument, in addition to the elapsed time; this is useful for precise scheduling of secondary timers.
+* Calling [timer](#timer) within a timer callback no longer makes a duplicate requestAnimationFrame. Calling this method with a delay greater than 24ms when no earlier timers are active guarantees a setTimeout rather than a requestAnimationFrame.
 
 <a name="timer" href="#timer">#</a> <b>timer</b>(<i>callback</i>[, <i>delay</i>[, <i>time</i>]])
 

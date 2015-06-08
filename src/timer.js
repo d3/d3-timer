@@ -2,55 +2,52 @@ var queueHead,
     queueTail,
     active, // the currently-executing timer
     frame, // is an animation frame pending?
-    timeout; // is a timeout pending?
+    timeout, // is a timeout pending?
+    timeoutTime = Infinity; // the time the timeout will fire
 
 // The timer will continue to fire until callback returns true.
-export function timer(callback, delay, then) {
-  if (delay == null) delay = 0;
-  if (then == null) then = Date.now();
+export function timer(callback, delay, time) {
+  if (time == null) time = Date.now(); else time = +time;
+  if (delay != null) time += +delay;
 
   // Add the callback to the tail of the queue.
-  var timer = new Timer(callback, then + delay);
+  var timer = new Timer(callback, time);
   if (queueTail) queueTail.next = timer;
   else queueHead = timer;
   queueTail = timer;
 
-  // Start animatin’!
-  if (!frame) {
-    timeout = clearTimeout(timeout);
-    frame = requestAnimationFrame(step);
-  }
+  wakeAt(time);
 };
 
 // Replace the current timer. Only allowed within a timer callback.
-export function timerReplace(callback, delay, then) {
-  if (delay == null) delay = 0;
-  if (then == null) then = Date.now();
+export function timerReplace(callback, delay, time) {
+  if (time == null) time = Date.now(); else time = +time;
+  if (delay != null) time += +delay;
   active.callback = callback;
-  active.time = then + delay;
+  active.time = time;
 };
 
 // Execute all eligible timers,
 // then flush completed timers to avoid concurrent queue modification.
-// Returns the delay until the nextmost active timer.
-export function timerFlush() {
-  var now = Date.now(),
-      active0 = active;
+// Returns the time of the earliest active timer.
+export function timerFlush(time) {
+  if (time == null) time = Date.now(); else time = +time;
+  var active0 = active;
 
   // Note: timerFlush can be re-entrant, so we must preserve the old active.
   active = queueHead;
   while (active) {
-    if (now >= active.time) active.flush = active.callback(now - active.time, now);
+    if (time >= active.time) active.flush = active.callback(time - active.time, time);
     active = active.next;
   }
   active = active0;
+  time = Infinity;
 
   // Note: invoking a timer callback can change the timer queue (due to a re-
   // entrant timerFlush or scheduling a new timer). Thus we must defer capturing
   // queueHead until after we’ve invoked all callbacks.
   var t0,
-      t1 = queueHead,
-      time = Infinity;
+      t1 = queueHead;
   while (t1) {
     if (t1.flush) {
       t1 = t0 ? t0.next = t1.next : queueHead = t1.next;
@@ -60,7 +57,7 @@ export function timerFlush() {
     }
   }
   queueTail = t0;
-  return time - now;
+  return time;
 };
 
 function Timer(callback, time) {
@@ -70,16 +67,25 @@ function Timer(callback, time) {
   this.next = null;
 }
 
-function step() {
-  frame = 0;
-  var delay = timerFlush();
-  if (frame) return; // Return if timer(…) was called during flush.
+function wake() {
+  frame = timeout = 0, timeoutTime = Infinity;
+  wakeAt(timerFlush());
+}
+
+function wakeAt(time) {
+  if (frame) return; // Fastest wake already set.
+  var delay = time - Date.now();
   if (delay > 24) {
-    if (isFinite(delay)) {
+    if (timeoutTime > time) { // Note: false if time is infinite.
       clearTimeout(timeout);
-      timeout = setTimeout(step, delay);
+      timeout = setTimeout(wake, delay);
+      timeoutTime = time;
     }
   } else {
-    frame = requestAnimationFrame(step);
+    if (timeout) {
+      timeout = clearTimeout(timeout);
+      timeoutTime = Infinity;
+    }
+    frame = requestAnimationFrame(wake);
   }
 }

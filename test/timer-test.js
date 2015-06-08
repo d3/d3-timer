@@ -37,6 +37,7 @@ tape("timer(callback) passes the callback the elapsed and current time", functio
   var start = Date.now(), count = 0;
   timer.timer(function(elapsed, now) {
     test.equal(elapsed, now - start);
+    test.inRange(now, Date.now() - 10, Date.now());
     if (++count > 10) {
       test.end();
       return true;
@@ -97,12 +98,39 @@ tape("timer(callback) within a timerFlush() does not schedule a duplicate reques
         test.equal(frames, 2);
         test.end();
         return true;
-      }, 50);
+      }, 10);
       return true;
-    }, 50);
+    }, 10);
     return true;
   });
   timer.timerFlush();
+});
+
+tape("timer(callback) uses setTimeout for long delays", function(test) {
+  var requestAnimationFrame0 = requestAnimationFrame,
+      setTimeout0 = setTimeout,
+      frames = 0,
+      timeouts = 0;
+  requestAnimationFrame = function() { --timeouts, ++frames; return requestAnimationFrame0.apply(this, arguments); }; // calls setTimeout
+  setTimeout = function() { ++timeouts; return setTimeout0.apply(this, arguments); };
+  timer.timer(function() {
+    test.equal(frames, 0);
+    test.equal(timeouts, 1);
+    timer.timer(function() {
+      test.equal(frames, 1);
+      test.equal(timeouts, 1);
+      timer.timer(function() {
+        test.equal(frames, 1);
+        test.equal(timeouts, 2);
+        requestAnimationFrame = requestAnimationFrame0;
+        setTimeout = setTimeout0;
+        test.end();
+        return true;
+      }, 100);
+      return true;
+    });
+    return true;
+  }, 100);
 });
 
 tape("timerFlush() immediately invokes any eligible timers", function(test) {
