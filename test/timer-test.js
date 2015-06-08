@@ -86,6 +86,25 @@ tape("timer(callback, delay, time) computes the effective delay relative to the 
   }, delay, Date.now() - skew);
 });
 
+tape("timer(callback) within a timerFlush() does not schedule a duplicate requestAnimationFrame", function(test) {
+  var requestAnimationFrame0 = requestAnimationFrame,
+      frames = 0;
+  requestAnimationFrame = function() { ++frames; return requestAnimationFrame0.apply(this, arguments); };
+  timer.timer(function() {
+    timer.timer(function() {
+      timer.timer(function() {
+        requestAnimationFrame = requestAnimationFrame0;
+        test.equal(frames, 2);
+        test.end();
+        return true;
+      }, 50);
+      return true;
+    }, 50);
+    return true;
+  });
+  timer.timerFlush();
+});
+
 tape("timerFlush() immediately invokes any eligible timers", function(test) {
   var count = 0;
   timer.timer(function() { return ++count; });
