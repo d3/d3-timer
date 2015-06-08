@@ -26,7 +26,7 @@ Use *delay* and *time* to specify relative and absolute moments in time when the
 timer(callback, -4 * 1000 * 60 * 60, +new Date(2012, 09, 29)); // four hours before midnight October 29 (months are zero-based)
 ```
 
-Note that if timer is called within the callback of another timer, the new timer will be invoked immediately at the end of the current frame (if eligible as determined by the specified *delay* and *time*), rather than waiting until the next frame.
+Note that if [timer](#timer) is called within the callback of another timer, the new timer callback  (if eligible as determined by the specified *delay* and *time*) will be invoked immediately at the end of the current frame, rather than waiting until the next frame.
 
 <a name="timerFlush" href="#timerFlush">#</a> <b>timerFlush</b>()
 
