@@ -106,7 +106,7 @@ tape("timer(callback) within a timerFlush() does not schedule a duplicate reques
   timer.timerFlush();
 });
 
-tape("timer(callback) uses setTimeout for long delays", function(test) {
+tape("timer(callback) switches to setTimeout for long delays", function(test) {
   var requestAnimationFrame0 = requestAnimationFrame,
       setTimeout0 = setTimeout,
       frames = 0,
