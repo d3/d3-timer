@@ -1,6 +1,6 @@
 # d3-timer
 
-An efficient timer queue allowing thousands of timers to be processed concurrently with minimal overhead. This timer queue also guarantees consistent timing of animations when concurrent or staged transitions are scheduled.
+An efficient queue capable of managing thousands of concurrent animations. Also guarantees consistent, synchronized timing with concurrent or staged animations.
 
 If supported, d3-timer uses [requestAnimationFrame](http://paulirish.com/2011/requestanimationframe-for-smart-animating/) for fluid and efficient animation. The timer queue also switches to [setTimeout](https://developer.mozilla.org/en-US/docs/Web/API/WindowTimers/setTimeout) when there is a delay greater than 24ms before the next scheduled timer.
 Changes from D3 3.x:
