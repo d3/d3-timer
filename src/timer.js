@@ -77,15 +77,12 @@ function wakeAt(time) {
   var delay = time - Date.now();
   if (delay > 24) {
     if (timeoutTime > time) { // Note: false if time is infinite.
-      clearTimeout(timeout);
+      if (timeout) clearTimeout(timeout);
       timeout = setTimeout(wake, delay);
       timeoutTime = time;
     }
   } else {
-    if (timeout) {
-      timeout = clearTimeout(timeout);
-      timeoutTime = Infinity;
-    }
+    if (timeout) timeout = clearTimeout(timeout), timeoutTime = Infinity;
     frame = requestAnimationFrame(wake);
   }
 }

@@ -133,6 +133,53 @@ tape("timer(callback) uses setTimeout for long delays", function(test) {
   }, 100);
 });
 
+tape("timer(callback) cancels an earlier setTimeout as appropriate", function(test) {
+  var setTimeout0 = setTimeout,
+      clearTimeout0 = clearTimeout,
+      setTimeouts = [],
+      clearTimeouts = [],
+      reenter = 0;
+  setTimeout = function() { var t = setTimeout0.apply(this, arguments); setTimeouts.push(t); return t; };
+  clearTimeout = function(t) { clearTimeouts.push(t); return clearTimeout0.apply(this, arguments); };
+  timer.timer(function() {
+    test.equal(clearTimeouts.length, 1);
+    test.equal(setTimeouts.length, 3);
+    setTimeout = setTimeout0;
+    clearTimeout = clearTimeout0;
+    test.end();
+    return true;
+  }, 150);
+  timer.timer(function() {
+    test.equal(clearTimeouts.length, 1);
+    test.equal(setTimeouts.length, 2);
+    test.equal(clearTimeouts[0], setTimeouts[0]);
+    return true;
+  }, 100);
+});
+
+tape("timer(callback) reuses an earlier setTimeout as appropriate", function(test) {
+  var setTimeout0 = setTimeout,
+      clearTimeout0 = clearTimeout,
+      setTimeouts = [],
+      clearTimeouts = [],
+      reenter = 0;
+  setTimeout = function() { var t = setTimeout0.apply(this, arguments); setTimeouts.push(t); return t; };
+  clearTimeout = function(t) { clearTimeouts.push(t); return clearTimeout0.apply(this, arguments); };
+  timer.timer(function() {
+    test.equal(clearTimeouts.length, 0);
+    test.equal(setTimeouts.length, 1);
+    return true;
+  }, 100);
+  timer.timer(function() {
+    test.equal(clearTimeouts.length, 0);
+    test.equal(setTimeouts.length, 2);
+    setTimeout = setTimeout0;
+    clearTimeout = clearTimeout0;
+    test.end();
+    return true;
+  }, 150);
+});
+
 tape("timerFlush() immediately invokes any eligible timers", function(test) {
   var count = 0;
   timer.timer(function() { return ++count; });
