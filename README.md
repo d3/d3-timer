@@ -14,7 +14,7 @@ Changes from D3 3.x:
 
 <a name="timer" href="#timer">#</a> <b>timer</b>(<i>callback</i>[, <i>delay</i>[, <i>time</i>]])
 
-Schedules a new timer, invoking the specified *callback* repeatedly until it returns true. To cancel the timer after it starts, the *callback* must return a truthy value. An optional numeric *delay* in milliseconds may be specified to invoke the given *callback* after a delay. The delay is relative to the specified *time* in milliseconds since UNIX epoch; if *time* is not specified, it defaults to [Date.now](https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Date/now).
+Schedules a new timer, invoking the specified *callback* repeatedly until it returns true. (There is no API for canceling a timer; the *callback* must return a truthy value to terminate.) An optional numeric *delay* in milliseconds may be specified to invoke the given *callback* after a delay. The delay is relative to the specified *time* in milliseconds since UNIX epoch; if *time* is not specified, it defaults to [Date.now](https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Date/now).
 
 The *callback* is passed two arguments: the elapsed time since the timer became active, and the current time. The latter is useful for precise scheduling of secondary timers. For example:
 
