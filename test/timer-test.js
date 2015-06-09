@@ -70,7 +70,7 @@ tape("timer(callback) passes the callback the elapsed and current time", functio
   }, 0, start);
 });
 
-tape("timer(callback) within a callback invokes a new eligible callback within the same frame", function(test) {
+tape("timer(callback) within a callback invokes the new callback within the same frame", function(test) {
   var start = Date.now();
   timer.timer(function(elapsed, now) {
     var delay = Date.now() - start;
@@ -219,5 +219,17 @@ tape("timerFlush() within timerFlush() still executes all eligible timers", func
   timer.timer(function() { if (++count >= 3) return true; timer.timerFlush(); });
   timer.timerFlush();
   test.equal(count, 3);
+  test.end();
+});
+
+tape("timerFlush(time) observes the specified time", function(test) {
+  var start = Date.now(), count = 0;
+  timer.timer(function() { return ++count >= 2; }, 0, start);
+  timer.timerFlush(start - 1);
+  test.equal(count, 0);
+  timer.timerFlush(start);
+  test.equal(count, 1);
+  timer.timerFlush(start + 1);
+  test.equal(count, 2);
   test.end();
 });
