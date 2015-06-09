@@ -12,6 +12,31 @@ tape("timer(callback) invokes the callback in about 17ms", function(test) {
   });
 });
 
+tape("timer(callback) invokes callbacks in scheduling order within a frame", function(test) {
+  var results = [];
+  timer.timer(function() { results.push(1); return true; });
+  timer.timer(function() { results.push(2); return true; });
+  timer.timer(function() { results.push(3); return true; });
+  timer.timer(function() {
+    test.deepEqual(results, [1, 2, 3]);
+    test.end();
+    return true;
+  });
+});
+
+tape("timer(callback, delay) invokes callbacks in scheduling order within a frame", function(test) {
+  var start = Date.now(),
+      results = [];
+  timer.timer(function() { results.push(1); return true; }, 100, start);
+  timer.timer(function() { results.push(2); return true; }, 100, start);
+  timer.timer(function() { results.push(3); return true; }, 100, start);
+  timer.timer(function() {
+    test.deepEqual(results, [1, 2, 3]);
+    test.end();
+    return true;
+  }, 100, start);
+});
+
 tape("timer(callback) invokes the callback about every 17ms until it returns true", function(test) {
   var start = Date.now(), count = 0;
   timer.timer(function() {
