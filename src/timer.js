@@ -11,7 +11,7 @@ export function timer(callback, delay, time) {
   if (delay != null) time += +delay;
 
   // Add the callback to the tail of the queue.
-  var timer = new Timer(callback, time);
+  var timer = {callback: callback, time: time, flush: false, next: null};
   if (queueTail) queueTail.next = timer;
   else queueHead = timer;
   queueTail = timer;
@@ -59,13 +59,6 @@ export function timerFlush(time) {
   queueTail = t0;
   return time;
 };
-
-function Timer(callback, time) {
-  this.callback = callback;
-  this.time = time;
-  this.flush = false;
-  this.next = null;
-}
 
 function wake() {
   frame = timeout = 0, timeoutTime = Infinity;
