@@ -2,15 +2,11 @@
 
 An efficient queue capable of managing thousands of concurrent animations. Also guarantees consistent, synchronized timing with concurrent or staged animations. Uses [requestAnimationFrame](https://developer.mozilla.org/en-US/docs/Web/API/window/requestAnimationFrame) for fluid animation, switching to [setTimeout](https://developer.mozilla.org/en-US/docs/Web/API/WindowTimers/setTimeout) for delays longer than 24ms.
 
-Changes from D3 3.x:
+## Installing
 
-* Timer callbacks are now passed the current time as a second argument, in addition to the elapsed time; this is useful for precise scheduling of secondary timers.
+If you use NPM, `npm install d3-timer`. Otherwise, download the [latest release](https://github.com/d3/d3-timer/releases/latest).
 
-* A new [timerReplace](#timerReplace) method has been added to replace the current timer within a timer callback.
-
-* The timer.flush method has been renamed [timerFlush](#timerFlush). This method now accepts an optional *time* argument representing the current time, and returns the time of the earliest next timer. Calling this method within a timer callback no longer causes a crash.
-
-* Calling [timer](#timer) within a timer callback no longer makes a duplicate requestAnimationFrame. Calling this method with a delay greater than 24ms when no earlier timers are active guarantees a setTimeout rather than a requestAnimationFrame.
+## API Reference
 
 <a name="timer" href="#timer">#</a> <b>timer</b>(<i>callback</i>[, <i>delay</i>[, <i>time</i>]])
 
@@ -60,3 +56,13 @@ Note that zero-delay timers are normally first executed after one frame (~17ms).
 <a name="timerReplace" href="#timerReplace">#</a> <b>timerReplace</b>(<i>callback</i>[, <i>delay</i>[, <i>time</i>]])
 
 Replace the current timer’s *callback*, *delay* and *time*. This method can only be called within a timer callback, and is equivalent to [timer](#timer), except that it replaces the current timer rather than scheduling a new timer.
+
+## Changes from D3 3.x:
+
+* Timer callbacks are now passed the current time as a second argument, in addition to the elapsed time; this is useful for precise scheduling of secondary timers.
+
+* A new [timerReplace](#timerReplace) method has been added to replace the current timer within a timer callback.
+
+* The timer.flush method has been renamed [timerFlush](#timerFlush). This method now accepts an optional *time* argument representing the current time, and returns the time of the earliest next timer. Calling this method within a timer callback no longer causes a crash.
+
+* Calling [timer](#timer) within a timer callback no longer makes a duplicate requestAnimationFrame. Calling this method with a delay greater than 24ms when no earlier timers are active guarantees a setTimeout rather than a requestAnimationFrame.
