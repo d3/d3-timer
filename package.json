@@ -1,6 +1,6 @@
 {
   "name": "d3-timer",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "An efficient queue capable of managing thousands of concurrent animations.",
   "keywords": [
     "d3",
@@ -26,7 +26,7 @@
   "scripts": {
     "pretest": "mkdir -p build && d3-bundler --polyfill-raf --format=umd --name=timer -- index.js > build/timer.js",
     "test": "faucet `find test -name '*-test.js'`",
-    "prepublish": "npm run test && uglifyjs build/timer.js -c -m -o build/timer.min.js"
+    "prepublish": "npm run test && uglifyjs build/timer.js -c -m -o build/timer.min.js && rm -f build/timer.zip && zip -j build/timer.zip -- LICENSE README.md build/timer.js build/timer.min.js"
   },
   "devDependencies": {
     "d3-bundler": "~0.2.6",
