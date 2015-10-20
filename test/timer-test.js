@@ -112,14 +112,15 @@ tape("timer(callback, delay, time) computes the effective delay relative to the 
   }, delay, Date.now() - skew);
 });
 
+// Note: assumes that Node doesn’t support requestAnimationFrame, falling back to setTimeout.
 tape("timer(callback) within a timerFlush() does not schedule a duplicate requestAnimationFrame", function(test) {
-  var requestAnimationFrame0 = requestAnimationFrame,
+  var setTimeout0 = setTimeout,
       frames = 0;
-  requestAnimationFrame = function() { ++frames; return requestAnimationFrame0.apply(this, arguments); };
+  setTimeout = function() { ++frames; return setTimeout0.apply(this, arguments); };
   timer.timer(function() {
     timer.timer(function() {
       timer.timer(function() {
-        requestAnimationFrame = requestAnimationFrame0;
+        setTimeout = setTimeout0;
         test.equal(frames, 2);
         test.end();
         return true;
@@ -131,13 +132,12 @@ tape("timer(callback) within a timerFlush() does not schedule a duplicate reques
   timer.timerFlush();
 });
 
+// Note: assumes that Node doesn’t support requestAnimationFrame, falling back to setTimeout.
 tape("timer(callback) switches to setTimeout for long delays", function(test) {
-  var requestAnimationFrame0 = requestAnimationFrame,
-      setTimeout0 = setTimeout,
+  var setTimeout0 = setTimeout,
       frames = 0,
       timeouts = 0;
-  requestAnimationFrame = function() { --timeouts, ++frames; return requestAnimationFrame0.apply(this, arguments); }; // calls setTimeout
-  setTimeout = function() { ++timeouts; return setTimeout0.apply(this, arguments); };
+  setTimeout = function(callback, delay) { delay < 20 ? ++frames : ++timeouts; return setTimeout0.apply(this, arguments); }; // calls setTimeout
   timer.timer(function() {
     test.equal(frames, 0);
     test.equal(timeouts, 1);
@@ -147,7 +147,6 @@ tape("timer(callback) switches to setTimeout for long delays", function(test) {
       timer.timer(function() {
         test.equal(frames, 1);
         test.equal(timeouts, 2);
-        requestAnimationFrame = requestAnimationFrame0;
         setTimeout = setTimeout0;
         test.end();
         return true;

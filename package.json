@@ -1,6 +1,6 @@
 {
   "name": "d3-timer",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "An efficient queue capable of managing thousands of concurrent animations.",
   "keywords": [
     "d3",
@@ -24,12 +24,12 @@
     "url": "https://github.com/d3/d3-timer.git"
   },
   "scripts": {
-    "pretest": "mkdir -p build && d3-bundler --polyfill-raf --format=umd --name=timer -- index.js > build/timer.js",
+    "pretest": "mkdir -p build && d3-bundler --format=umd --name=timer -- index.js > build/timer.js",
     "test": "faucet `find test -name '*-test.js'`",
     "prepublish": "npm run test && uglifyjs build/timer.js -c -m -o build/timer.min.js && rm -f build/timer.zip && zip -j build/timer.zip -- LICENSE README.md build/timer.js build/timer.min.js"
   },
   "devDependencies": {
-    "d3-bundler": "~0.2.6",
+    "d3-bundler": "~0.3.0",
     "faucet": "0.0",
     "tape": "4",
     "uglify-js": "2"

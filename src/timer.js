@@ -5,6 +5,14 @@ var queueHead,
     timeout, // is a timeout pending?
     timeoutTime = Infinity; // the time the timeout will fire
 
+var setFrame = typeof window !== "undefined"
+    && (window.requestAnimationFrame
+      || window.msRequestAnimationFrame
+      || window.mozRequestAnimationFrame
+      || window.webkitRequestAnimationFrame
+      || window.oRequestAnimationFrame)
+      || function(callback) { return setTimeout(callback, 17); };
+
 // The timer will continue to fire until callback returns true.
 export function timer(callback, delay, time) {
   if (time == null) time = Date.now(); else time = +time;
@@ -76,6 +84,6 @@ function wakeAt(time) {
     }
   } else {
     if (timeout) timeout = clearTimeout(timeout), timeoutTime = Infinity;
-    frame = requestAnimationFrame(wake);
+    frame = setFrame(wake);
   }
 }
