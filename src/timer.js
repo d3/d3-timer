@@ -24,7 +24,8 @@ export function timer(callback, delay, time) {
   else queueHead = timer;
   queueTail = timer;
 
-  wakeAt(time);
+  // Set an alarm to wake up for the timer’s first tick, if necessary.
+  if (!frame && !active) wakeAt(time);
 };
 
 // Replace the current timer. Only allowed within a timer callback.
@@ -74,7 +75,6 @@ function wake() {
 }
 
 function wakeAt(time) {
-  if (frame) return; // Fastest wake already set.
   var delay = time - Date.now();
   if (delay > 24) {
     if (timeoutTime > time) { // Note: false if time is infinite.
