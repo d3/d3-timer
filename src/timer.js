@@ -15,7 +15,7 @@ var setFrame = typeof window !== "undefined"
 
 // The timer will continue to fire until callback returns true.
 export function timer(callback, delay, time) {
-  if (time == null) time = Date.now(); else time = +time;
+  time = time == null ? Date.now() : +time;
   if (delay != null) time += +delay;
 
   // Add the callback to the tail of the queue.
@@ -30,7 +30,7 @@ export function timer(callback, delay, time) {
 
 // Replace the current timer. Only allowed within a timer callback.
 export function timerReplace(callback, delay, time) {
-  if (time == null) time = Date.now(); else time = +time;
+  time = time == null ? Date.now() : +time;
   if (delay != null) time += +delay;
   active.callback = callback;
   active.time = time;
@@ -40,7 +40,7 @@ export function timerReplace(callback, delay, time) {
 // then flush completed timers to avoid concurrent queue modification.
 // Returns the time of the earliest active timer.
 export function timerFlush(time) {
-  if (time == null) time = Date.now(); else time = +time;
+  time = time == null ? Date.now() : +time;
   var active0 = active;
 
   // Note: timerFlush can be re-entrant, so we must preserve the old active.
