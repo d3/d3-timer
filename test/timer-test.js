@@ -113,7 +113,7 @@ tape("timer(callback, delay, time) computes the effective delay relative to the 
 });
 
 // Note: assumes that Node doesn’t support requestAnimationFrame, falling back to setTimeout.
-tape("timer(callback) within a timerFlush() does not schedule a duplicate requestAnimationFrame", function(test) {
+tape("timer(callback, delay) within a timerFlush() does not schedule a duplicate requestAnimationFrame", function(test) {
   var setTimeout0 = setTimeout,
       frames = 0;
   setTimeout = function() { ++frames; return setTimeout0.apply(this, arguments); };
@@ -127,6 +127,26 @@ tape("timer(callback) within a timerFlush() does not schedule a duplicate reques
       }, 10);
       return true;
     }, 10);
+    return true;
+  });
+  timer.timerFlush();
+});
+
+// Note: assumes that Node doesn’t support requestAnimationFrame, falling back to setTimeout.
+tape("timer(callback) within a timerFlush() does not schedule a duplicate requestAnimationFrame", function(test) {
+  var setTimeout0 = setTimeout,
+      frames = 0;
+  setTimeout = function() { ++frames; return setTimeout0.apply(this, arguments); };
+  timer.timer(function(elapsed, time) {
+    timer.timer(function() {
+      timer.timer(function() {
+        setTimeout = setTimeout0;
+        test.equal(frames, 1);
+        test.end();
+        return true;
+      }, 0, time);
+      return true;
+    }, 0, time);
     return true;
   });
   timer.timerFlush();
@@ -152,7 +172,7 @@ tape("timer(callback) switches to setTimeout for long delays", function(test) {
         return true;
       }, 100);
       return true;
-    });
+    }, 10);
     return true;
   }, 100);
 });
