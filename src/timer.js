@@ -1,9 +1,11 @@
-var queueHead,
-    queueTail,
+var queueHead = {previous: null, next: null},
+    queueTail = {previous: null, next: null},
     active, // the currently-executing timer
     frame, // is an animation frame pending?
-    timeout, // is a timeout pending?
-    timeoutTime = Infinity; // the time the timeout will fire
+    timeout; // is a timeout pending?
+
+queueHead.next = queueTail;
+queueTail.previous = queueHead;
 
 var setFrame = typeof window !== "undefined"
     && (window.requestAnimationFrame
@@ -13,77 +15,66 @@ var setFrame = typeof window !== "undefined"
       || window.oRequestAnimationFrame)
       || function(callback) { return setTimeout(callback, 17); };
 
-// The timer will continue to fire until callback returns true.
+// TODO These fields should be really private, like, inaccessible?
+function Timer(callback, delay, time) {
+  this.reset(callback, delay, time);
+  this.previous = queueTail.previous;
+  this.next = queueTail;
+  queueTail.previous.next = this;
+  queueTail.previous = this;
+}
+
+Timer.prototype = {
+  reset: function(callback, delay, time) {
+    this.callback = callback;
+    this.time = (time == null ? Date.now() : +time) + (delay == null ? 0 : +delay);
+    sleep(); // Sleep for a tick, and then compute the desired wake time.
+  },
+  stop: function() {
+    if (this === active) active = this.previous;
+    this.previous.next = this.next, this.next.previous = this.previous;
+    this.previous = this.next = this.callback = null;
+  }
+};
+
 export function timer(callback, delay, time) {
-  time = time == null ? Date.now() : +time;
-  if (delay != null) time += +delay;
-
-  // Add the callback to the tail of the queue.
-  var timer = {callback: callback, time: time, flush: false, next: null};
-  if (queueTail) queueTail.next = timer;
-  else queueHead = timer;
-  queueTail = timer;
-
-  // Set an alarm to wake up for the timer’s first tick, if necessary.
-  if (!frame && !active) wakeAt(time);
+  return new Timer(callback, delay, time);
 };
 
-// Replace the current timer. Only allowed within a timer callback.
-export function timerReplace(callback, delay, time) {
-  time = time == null ? Date.now() : +time;
-  if (delay != null) time += +delay;
-  active.callback = callback;
-  active.time = time;
-};
-
-// Execute all eligible timers,
-// then flush completed timers to avoid concurrent queue modification.
-// Returns the time of the earliest active timer.
 export function timerFlush(time) {
   time = time == null ? Date.now() : +time;
   var active0 = active;
-
-  // Note: timerFlush can be re-entrant, so we must preserve the old active.
   active = queueHead;
-  while (active) {
-    if (time >= active.time) active.flush = active.callback(time - active.time, time);
-    active = active.next;
-  }
-  active = active0;
-  time = Infinity;
-
-  // Note: invoking a timer callback can change the timer queue (due to a re-
-  // entrant timerFlush or scheduling a new timer). Thus we must defer capturing
-  // queueHead until after we’ve invoked all callbacks.
-  var t0,
-      t1 = queueHead;
-  while (t1) {
-    if (t1.flush) {
-      t1 = t0 ? t0.next = t1.next : queueHead = t1.next;
-    } else {
-      if (t1.time < time) time = t1.time;
-      t1 = (t0 = t1).next;
+  try {
+    while ((active = active.next) !== queueTail) {
+      if (time >= active.time) {
+        active.callback(time - active.time, time);
+      }
     }
+  } finally {
+    active = active0;
   }
-  queueTail = t0;
-  return time;
 };
 
 function wake() {
-  frame = timeout = 0, timeoutTime = Infinity;
-  wakeAt(timerFlush());
+  frame = timeout = 0;
+  try {
+    timerFlush();
+  } finally {
+    var timer = queueHead, time = Infinity;
+    while ((timer = timer.next) !== queueTail) {
+      if (time > timer.time) {
+        time = timer.time;
+      }
+    }
+    sleep(time);
+  }
 }
 
-function wakeAt(time) {
+function sleep(time) {
+  if (frame || active) return; // Soonest alarm already set, or will be.
+  if (timeout) timeout = clearTimeout(timeout);
   var delay = time - Date.now();
-  if (delay > 24) {
-    if (timeoutTime > time) { // Note: false if time is infinite.
-      if (timeout) clearTimeout(timeout);
-      timeout = setTimeout(wake, delay);
-      timeoutTime = time;
-    }
-  } else {
-    if (timeout) timeout = clearTimeout(timeout), timeoutTime = Infinity;
-    frame = setFrame(wake);
-  }
+  if (delay > 24) timeout = setTimeout(wake, delay);
+  else frame = setFrame(wake);
 }
