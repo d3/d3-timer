@@ -1,8 +1,8 @@
 var queueHead,
     queueTail,
     pokeDelay = 1000,
-    pokeInterval,
-    wakeTime,
+    pokeTimeout,
+    woke,
     active, // the currently-executing timer
     frame, // is an animation frame pending?
     timeout, // is a timeout pending?
@@ -29,7 +29,8 @@ export function timer(callback, delay, time) {
 
   // Set alarms to wake up for the timer’s first tick, if necessary.
   if (!frame && !active) wakeAt(time);
-  if (!pokeInterval) pokeInterval = setInterval(poke, pokeDelay);
+  if (!pokeTimeout) pokeTimeout = setTimeout(poke, pokeDelay);
+  woke = 0;
 };
 
 // Replace the current timer. Only allowed within a timer callback.
@@ -77,17 +78,20 @@ export function timerFlush(time) {
 // setInterval continue at a reduced rate. We want to invoke the first tick of a
 // timer at the faster of the two, so as to avoid an ever-growing timer queue.
 //
-// XXX This pokes too often: it will poke if there are any timers in the queue,
-// whereas we only want to guarantee the first tick of a timer in the
-// background, and leave the remainder paused.
+// This may poke early if the poke delay is less than the timer’s delay. But
+// there’s no real downside of poking early. Right? XXX What if we poke just
+// before the scheduled timer becomes active, such that the timer doesn’t
+// receive a tick, but then wakeAt uses requestAnimationFrame to wake up again,
+// which then is paused and so never awakes… In that case, wouldn’t we have used
+// setTimeout to wake up, anyway?
 function poke() {
-  if (!queueHead) return pokeInterval = clearInterval(pokeInterval);
-  if (Date.now() - wakeTime > pokeDelay) wake();
+  pokeTimeout = 0;
+  if (!woke) wake();
 }
 
 function wake() {
-  frame = timeout = 0, timeoutTime = Infinity;
-  wakeAt(timerFlush(wakeTime = Date.now()));
+  woke = 1, frame = timeout = 0, timeoutTime = Infinity;
+  wakeAt(timerFlush());
 }
 
 function wakeAt(time) {
