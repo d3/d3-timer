@@ -226,7 +226,7 @@ tape("timer(callback) reuses an earlier setTimeout as appropriate", function(tes
 
 tape("timerFlush() immediately invokes any eligible timers", function(test) {
   var count = 0;
-  timer.timer(function() { if (++count) this.stop(); });
+  timer.timer(function() { ++count; this.stop(); });
   timer.timerFlush();
   timer.timerFlush();
   test.equal(count, 1);

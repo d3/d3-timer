@@ -31,7 +31,7 @@ Timer.prototype = {
     sleep(); // Sleep for a tick, and then compute the desired wake time.
   },
   stop: function() {
-    if (this === active) active = this.previous;
+    if (this === active) active = this.previous; // TODO re-entrant timerFlush
     this.previous.next = this.next, this.next.previous = this.previous;
     this.previous = this.next = this.callback = null;
   }
