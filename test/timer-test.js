@@ -121,7 +121,7 @@ tape("timer(callback, delay) within a timerFlush() does not schedule a duplicate
     timer.timer(function() {
       timer.timer(function() {
         setTimeout = setTimeout0;
-        test.equal(frames, 2);
+        test.equal(frames, 4);
         test.end();
         this.stop();
       }, 10);
