@@ -61,7 +61,7 @@ An opaque, unique identifier for this timer.
 
 <a name="timerFlush" href="#timerFlush">#</a> <b>timerFlush</b>([<i>time</i>])
 
-Immediately execute (invoke once) any eligible timer callbacks. If *time* is specified, it represents the current time; if not specified, it defaults to Date.now. Specifying the time explicitly can ensure deterministic behavior.
+Immediately execute (invoke once) any eligible timer callbacks. If *time* is specified, it represents the current time; if not specified, it defaults to Date.now. Specifying an explicit time helps ensure deterministic behavior.
 
 Note that zero-delay timers are normally first executed after one frame (~17ms). This can cause a brief flicker because the browser renders the page twice: once at the end of the first event loop, then again immediately on the first timer callback. By flushing the timer queue at the end of the first event loop, you can run any zero-delay timers immediately and avoid the flicker.
 
