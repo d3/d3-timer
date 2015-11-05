@@ -49,7 +49,7 @@ If [timer](#timer) is called within the callback of another timer, the new timer
 
 <a name="timer_restart" href="#timer_restart">#</a> <i>timer</i>.<b>restart</b>(<i>callback</i>[, <i>delay</i>[, <i>time</i>]])
 
-Restart a timer with the specified *callback* and optional *delay* and *time*. This is equivalent to stopping this timer and creating a new timer with the specified arguments, although this timer retains the same [id](#timer_id).
+Restart a timer with the specified *callback* and optional *delay* and *time*. This is equivalent to stopping this timer and creating a new timer with the specified arguments, although this timer retains the original [id](#timer_id) and invocation priority.
 
 <a name="timer_stop" href="#timer_stop">#</a> <i>timer</i>.<b>stop</b>()
 
