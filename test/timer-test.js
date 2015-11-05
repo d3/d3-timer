@@ -3,55 +3,30 @@ var tape = require("tape"),
 
 require("./inRange");
 
-tape("timer(callback) invokes the callback in about 17ms", function(test) {
-  var t = timer.timer(function(elapsed) {
-    test.inRange(elapsed, 17 - 10, 17 + 10);
+// Some tests need a trailing frame after timers are stopped to cleanup the
+// queue and clear the alarm. Let that finish before starting a new test.
+function end(test) {
+  setTimeout(function() {
     test.end();
-    t.stop();
-  });
+  }, 24);
+}
+
+tape("timer(callback) returns an instanceof timer", function(test) {
+  var t = timer.timer(function() {});
+  test.equal(t instanceof timer.timer, true);
+  t.stop();
+  end(test);
 });
 
-tape("timer(callback) passes the callback the elapsed and current time", function(test) {
-  var then = Date.now();
-  var t = timer.timer(function(elapsed, now) {
-    test.inRange(now, Date.now() - 5, Date.now());
-    test.equal(elapsed, now - then);
-    test.end();
-    t.stop();
-  }, 0, then);
-});
-
-tape("timer(callback) invokes callbacks in scheduling order within a frame", function(test) {
-  var results = [];
-  var t0 = timer.timer(function() { results.push(1); t0.stop(); });
-  var t1 = timer.timer(function() { results.push(2); t1.stop(); });
-  var t2 = timer.timer(function() { results.push(3); t2.stop(); });
-  var t3 = timer.timer(function() {
-    test.deepEqual(results, [1, 2, 3]);
-    test.end();
-    t3.stop();
-  });
-});
-
-tape("timer(callback, delay) invokes callbacks in scheduling order within a frame", function(test) {
-  var then = Date.now(), results = [];
-  var t0 = timer.timer(function() { results.push(1); t0.stop(); }, 100, then);
-  var t1 = timer.timer(function() { results.push(2); t1.stop(); }, 100, then);
-  var t2 = timer.timer(function() { results.push(3); t2.stop(); }, 100, then);
-  var t3 = timer.timer(function() {
-    test.deepEqual(results, [1, 2, 3]);
-    test.end();
-    t3.stop();
-  }, 100, then);
-});
-
+// It’s difficult to test the timing behavior reliably, since there can be small
+// hiccups that cause a timer to be delayed. So we test only the mean rate.
 tape("timer(callback) invokes the callback about every 17ms", function(test) {
   var start = Date.now(), count = 0;
   var t = timer.timer(function() {
-    if (++count >= 10) {
-      test.inRange(Date.now() - start, 170 - 50, 170 + 50);
-      test.end();
+    if (++count > 10) {
       t.stop();
+      test.inRange(Date.now() - start, (17 - 5) * count, (17 + 5) * count);
+      end(test);
     }
   });
 });
@@ -60,8 +35,8 @@ tape("timer(callback) invokes the callback until the timer is stopped", function
   var count = 0;
   var t = timer.timer(function() {
     if (++count > 2) {
-      test.end();
       t.stop();
+      end(test);
     }
   });
 });
@@ -69,64 +44,103 @@ tape("timer(callback) invokes the callback until the timer is stopped", function
 tape("timer(callback) passes the callback the elapsed and current time", function(test) {
   var start = Date.now(), count = 0;
   var t = timer.timer(function(elapsed, now) {
+    ++count;
     test.equal(elapsed, now - start);
     test.inRange(now, Date.now() - 10, Date.now());
-    if (++count > 10) {
-      test.end();
+    if (count > 10) {
       t.stop();
+      end(test);
     }
   }, 0, start);
-});
-
-// TODO test that timer(callback, 0, time) during flush runs at the end of the tick
-// TODO should check the number of frames requested here
-tape("timer(callback) within a callback invokes the new callback within the same frame", function(test) {
-  var start = Date.now();
-  var t0 = timer.timer(function(elapsed, now) {
-    var delay = Date.now() - start;
-    var t1 = timer.timer(function(elapsed2, now2) {
-      test.equal(elapsed2, 0);
-      test.equal(now2, now);
-      test.inRange(Date.now() - start, delay, delay + 3);
-      test.end();
-      t1.stop();
-    }, 0, now);
-    t0.stop();
-  });
 });
 
 tape("timer(callback, delay) first invokes the callback after the specified delay", function(test) {
   var start = Date.now(), delay = 150;
   var t = timer.timer(function() {
-    test.inRange(Date.now() - start, delay - 10, delay + 10);
-    test.end();
     t.stop();
+    test.inRange(Date.now() - start, delay - 10, delay + 10);
+    end(test);
   }, delay);
 });
 
 tape("timer(callback, delay) computes the elapsed time relative to the delay", function(test) {
   var delay = 150;
   var t = timer.timer(function(elapsed) {
-    test.inRange(elapsed, 0, 10);
-    test.end();
     t.stop();
+    test.inRange(elapsed, 0, 10);
+    end(test);
   }, delay);
 });
 
 tape("timer(callback, delay, time) computes the effective delay relative to the specified time", function(test) {
   var delay = 150, skew = 200;
   var t = timer.timer(function(elapsed) {
-    test.inRange(elapsed, skew - delay + 17 - 10, skew - delay + 17 + 10);
-    test.end();
     t.stop();
+    test.inRange(elapsed, skew - delay + 17 - 10, skew - delay + 17 + 10);
+    end(test);
   }, delay, Date.now() - skew);
+});
+
+tape("timer(callback) invokes callbacks in scheduling order during synchronous flush", function(test) {
+  var results = [];
+  var t0 = timer.timer(function() { results.push(1); t0.stop(); });
+  var t1 = timer.timer(function() { results.push(2); t1.stop(); });
+  var t2 = timer.timer(function() { results.push(3); t2.stop(); });
+  timer.timerFlush();
+  test.deepEqual(results, [1, 2, 3]);
+  end(test);
+});
+
+tape("timer(callback) invokes callbacks in scheduling order during asynchronous flush", function(test) {
+  var results = [];
+  var t0 = timer.timer(function() { results.push(1); t0.stop(); });
+  var t1 = timer.timer(function() { results.push(2); t1.stop(); });
+  var t2 = timer.timer(function() { results.push(3); t2.stop(); });
+  var t3 = timer.timer(function() {
+    t3.stop();
+    test.deepEqual(results, [1, 2, 3]);
+    end(test);
+  });
+});
+
+// Even though these timers have different delays, they are still called back in
+// scheduling order when they are simultaneously active.
+tape("timer(callback, delay) invokes callbacks in scheduling order during asynchronous flush", function(test) {
+  var then = Date.now(), results;
+  var t0 = timer.timer(function() { results = [1]; t0.stop(); }, 60, then);
+  var t1 = timer.timer(function() { if (results) results.push(2), t1.stop(); }, 40, then);
+  var t2 = timer.timer(function() { if (results) results.push(3), t2.stop(); }, 80, then);
+  var t3 = timer.timer(function() {
+    t3.stop();
+    test.deepEqual(results, [1, 2, 3]);
+    end(test);
+  }, 100, then);
+});
+
+tape("timer(callback) within a frame invokes the callback at the end of the same frame", function(test) {
+  var start = Date.now();
+  var t0 = timer.timer(function(elapsed, now) {
+    var delay = Date.now() - start;
+    var t1 = timer.timer(function(elapsed2, now2) {
+      t1.stop();
+      test.equal(elapsed2, 0);
+      test.equal(now2, now);
+      test.inRange(Date.now() - start, delay, delay + 3);
+      end(test);
+    }, 0, now);
+    t0.stop();
+  });
 });
 
 // Note: assumes that Node doesn’t support requestAnimationFrame, falling back to setTimeout.
 tape("timer(callback, delay) within a timerFlush() does not request duplicate frames", function(test) {
   var setTimeout0 = setTimeout,
       frames = 0;
-  setTimeout = function() { ++frames; return setTimeout0.apply(this, arguments); };
+
+  setTimeout = function() {
+    ++frames;
+    return setTimeout0.apply(this, arguments);
+  };
 
   var t0 = timer.timer(function(elapsed, time) {
 
@@ -154,12 +168,13 @@ tape("timer(callback, delay) within a timerFlush() does not request duplicate fr
       test.equal(frames, 1);
 
       setTimeout0(function() {
-        setTimeout = setTimeout0;
 
         // 8. Since the timer queue was empty when we stopped the second timer,
         // no additional frame was requested after the timers were flushed.
         test.equal(frames, 1);
-        test.end();
+
+        setTimeout = setTimeout0;
+        end(test);
       }, 50);
     }, 1);
 
@@ -179,18 +194,16 @@ tape("timer(callback, delay) within a timerFlush() does not request duplicate fr
   test.equal(frames, 1);
 });
 
-// TODO test that timer.stop outside of flush requests a frame
-// TODO test that timer.restart outside of flush requests a frame
-// TODO test that multipler timer(…) schedulings only requests one frame
-// TODO test that scheduling a short timer will cancel an existing long timeout
-// TODO test that scheduling a long timer will use an existing short timeout
-
 // Note: assumes that Node doesn’t support requestAnimationFrame, falling back to setTimeout.
 tape("timer(callback) switches to setTimeout for long delays", function(test) {
   var setTimeout0 = setTimeout,
       frames = 0,
       timeouts = 0;
-  setTimeout = function(callback, delay) { delay === 17 ? ++frames : ++timeouts; return setTimeout0.apply(this, arguments); }; // calls setTimeout
+
+  setTimeout = function(callback, delay) {
+    delay === 17 ? ++frames : ++timeouts;
+    return setTimeout0.apply(this, arguments);
+  };
 
   var t0 = timer.timer(function() {
 
@@ -219,13 +232,14 @@ tape("timer(callback) switches to setTimeout for long delays", function(test) {
       test.equal(timeouts, 1);
 
       setTimeout0(function() {
-        setTimeout = setTimeout0;
 
         // 7. Since the timer queue was empty when we stopped the second timer,
         // no additional frame was requested after the timers were flushed.
         test.equal(frames, 2);
         test.equal(timeouts, 1);
-        test.end();
+
+        setTimeout = setTimeout0;
+        end(test);
       }, 50);
     }, 1);
 
@@ -243,52 +257,110 @@ tape("timer(callback) switches to setTimeout for long delays", function(test) {
   test.equal(timeouts, 0);
 });
 
-// tape("timer(callback) cancels an earlier setTimeout as appropriate", function(test) {
-//   var setTimeout0 = setTimeout,
-//       clearTimeout0 = clearTimeout,
-//       setTimeouts = [],
-//       clearTimeouts = [],
-//       reenter = 0;
-//   setTimeout = function() { var t = setTimeout0.apply(this, arguments); setTimeouts.push(t); return t; };
-//   clearTimeout = function(t) { clearTimeouts.push(t); return clearTimeout0.apply(this, arguments); };
-//   timer.timer(function() {
-//     test.equal(clearTimeouts.length, 1);
-//     test.equal(setTimeouts.length, 3);
-//     setTimeout = setTimeout0;
-//     clearTimeout = clearTimeout0;
-//     test.end();
-//     this.stop();
-//   }, 150);
-//   timer.timer(function() {
-//     test.equal(clearTimeouts.length, 1);
-//     test.equal(setTimeouts.length, 2);
-//     test.equal(clearTimeouts[0], setTimeouts[0]);
-//     this.stop();
-//   }, 100);
-// });
+tape("timer.stop() immediately stops the timer", function(test) {
+  var count = 0;
+  var t = timer.timer(function() { ++count; });
+  setTimeout(function() {
+    t.stop();
+    test.equal(count, 1);
+    end(test);
+  }, 24);
+});
 
-// tape("timer(callback) reuses an earlier setTimeout as appropriate", function(test) {
-//   var setTimeout0 = setTimeout,
-//       clearTimeout0 = clearTimeout,
-//       setTimeouts = [],
-//       clearTimeouts = [],
-//       reenter = 0;
-//   setTimeout = function() { var t = setTimeout0.apply(this, arguments); setTimeouts.push(t); return t; };
-//   clearTimeout = function(t) { clearTimeouts.push(t); return clearTimeout0.apply(this, arguments); };
-//   timer.timer(function() {
-//     test.equal(clearTimeouts.length, 0);
-//     test.equal(setTimeouts.length, 1);
-//     this.stop();
-//   }, 100);
-//   timer.timer(function() {
-//     test.equal(clearTimeouts.length, 0);
-//     test.equal(setTimeouts.length, 2);
-//     setTimeout = setTimeout0;
-//     clearTimeout = clearTimeout0;
-//     test.end();
-//     this.stop();
-//   }, 150);
-// });
+tape("timer.stop() recomputes the new wake time after one frame", function(test) {
+  var setTimeout0 = setTimeout,
+      delays = [];
+
+  setTimeout = function(callback, delay) {
+    delays.push(delay);
+    return setTimeout0.apply(this, arguments);
+  };
+
+  var t0 = timer.timer(function() {}, 1000);
+  var t1 = timer.timer(function() {}, 500);
+  setTimeout0(function() {
+
+    // 1. The two timers are scheduling in the first frame, and then the new
+    // wake time is computed based on minimum relative time of active timers.
+    test.equal(delays.length, 2);
+    test.equal(delays[0], 17);
+    test.inRange(delays[1], 500 - 17 - 10, 500 - 17 + 10);
+
+    t1.stop();
+
+    // 2. The second timer (with the smaller delay) was stopped, but the new
+    // wake time isn’t computed until the next frame, since we stopped the timer
+    // outside of a flush.
+    test.equal(delays.length, 3);
+    test.equal(delays[2], 17);
+
+    setTimeout0(function() {
+
+      // 3. The alarm was reset to wake for the long-delay timer.
+      test.equal(delays.length, 4);
+      test.inRange(delays[3], 1000 - 100 - 17 - 10, 1000 - 100 - 17 + 10);
+
+      t0.stop();
+
+      setTimeout0(function() {
+
+        // 4. The alarm was cleared after the long-delay timer was cancelled.
+        test.equal(delays.length, 5);
+        test.equal(delays[4], 17);
+
+        setTimeout = setTimeout0;
+        end(test);
+      }, 100);
+    }, 100);
+  }, 100);
+});
+
+tape("timer.restart() recomputes the new wake time after one frame", function(test) {
+  var then = Date.now(),
+      setTimeout0 = setTimeout,
+      delays = [];
+
+  setTimeout = function(callback, delay) {
+    delays.push(delay);
+    return setTimeout0.apply(this, arguments);
+  };
+
+  var t = timer.timer(function() {}, 500, then);
+  setTimeout0(function() {
+
+    // 1. The timer is scheduled in the first frame, and then the new wake time
+    // is computed based on its relative time.
+    test.equal(delays.length, 2);
+    test.equal(delays[0], 17);
+    test.inRange(delays[1], 500 - 17 - 10, 500 - 17 + 10);
+
+    t.restart(function() {}, 1000, then);
+
+    // 2. The timer was delayed, but the new wake time isn’t computed until the
+    // next frame, since we restarted the timer outside of a flush.
+    test.equal(delays.length, 3);
+    test.equal(delays[2], 17);
+
+    setTimeout0(function() {
+
+      // 3. The alarm was reset to wake for the longer delay.
+      test.equal(delays.length, 4);
+      test.inRange(delays[3], 1000 - 100 - 17 - 10, 1000 - 100 - 17 + 10);
+
+      t.stop();
+
+      setTimeout0(function() {
+
+        // 4. The alarm was cleared after the timer was cancelled.
+        test.equal(delays.length, 5);
+        test.equal(delays[4], 17);
+
+        setTimeout = setTimeout0;
+        end(test);
+      }, 100);
+    }, 100);
+  }, 100);
+});
 
 tape("timerFlush() immediately invokes any eligible timers", function(test) {
   var count = 0;
@@ -296,7 +368,7 @@ tape("timerFlush() immediately invokes any eligible timers", function(test) {
   timer.timerFlush();
   timer.timerFlush();
   test.equal(count, 1);
-  test.end();
+  end(test);
 });
 
 tape("timerFlush() within timerFlush() still executes all eligible timers", function(test) {
@@ -304,7 +376,7 @@ tape("timerFlush() within timerFlush() still executes all eligible timers", func
   var t = timer.timer(function() { if (++count >= 3) t.stop(); timer.timerFlush(); });
   timer.timerFlush();
   test.equal(count, 3);
-  test.end();
+  end(test);
 });
 
 tape("timerFlush(time) observes the specified time", function(test) {
@@ -316,5 +388,5 @@ tape("timerFlush(time) observes the specified time", function(test) {
   test.equal(count, 1);
   timer.timerFlush(start + 1);
   test.equal(count, 2);
-  test.end();
+  end(test);
 });
