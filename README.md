@@ -10,14 +10,14 @@ If you use NPM, `npm install d3-timer`. Otherwise, download the [latest release]
 
 <a name="timer" href="#timer">#</a> <b>timer</b>(<i>callback</i>[, <i>delay</i>[, <i>time</i>]])
 
-Schedules a new timer, invoking the specified *callback* repeatedly until it returns true. (There is no API for canceling a timer; the *callback* must return a truthy value to terminate.) An optional numeric *delay* in milliseconds may be specified to invoke the given *callback* after a delay. The delay is relative to the specified *time* in milliseconds since UNIX epoch; if *time* is not specified, it defaults to [Date.now](https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Date/now).
+Schedules a new timer, invoking the specified *callback* repeatedly until the timer is stopped. An optional numeric *delay* in milliseconds may be specified to invoke the given *callback* after a delay; if *delay* is not specified, it defaults to zero. The delay is relative to the specified *time* in milliseconds since UNIX epoch; if *time* is not specified, it defaults to [Date.now](https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Date/now).
 
-The *callback* is passed two arguments each time it is invoked: the elapsed time since the timer became active, and the current time. The latter is useful for precise scheduling of secondary timers. For example:
+The *callback* is passed two arguments when it is invoked: the elapsed time since the timer became active, and the current time. The latter is useful for precise scheduling of secondary timers. For example:
 
 ```js
-timer(function(elapsed, time) {
+var t = timer(function(elapsed, time) {
   console.log(elapsed, time);
-  return elapsed > 200;
+  if (elapsed > 200) t.stop();
 }, 150);
 ```
 
@@ -47,22 +47,30 @@ timer(callback, -4 * 1000 * 60 * 60, new Date(2012, 09, 29)); // four hours befo
 
 If [timer](#timer) is called within the callback of another timer, the new timer callback (if eligible as determined by the specified *delay* and *time*) will be invoked immediately at the end of the current frame, rather than waiting until the next frame.
 
+<a name="timer_restart" href="#timer_restart">#</a> <i>timer</i>.<b>restart</b>(<i>callback</i>[, <i>delay</i>[, <i>time</i>]])
+
+Restart a timer with the specified *callback* and optional *delay* and *time*. This is equivalent to stopping this timer and creating a new timer with the specified arguments, although this timer retains the same [id](#timer_id).
+
+<a name="timer_stop" href="#timer_stop">#</a> <i>timer</i>.<b>stop</b>()
+
+Stops this timer, preventing subsequent callbacks. This method has no effect if the timer has already stopped.
+
+<a name="timer_id" href="#timer_id">#</a> <i>timer</i>.<b>id</b>
+
+An opaque, unique identifier for this timer.
+
 <a name="timerFlush" href="#timerFlush">#</a> <b>timerFlush</b>([<i>time</i>])
 
 Immediately execute (invoke once) any eligible timer callbacks. If *time* is specified, it represents the current time; if not specified, it defaults to Date.now. Specifying the time explicitly can ensure deterministic behavior.
 
 Note that zero-delay timers are normally first executed after one frame (~17ms). This can cause a brief flicker because the browser renders the page twice: once at the end of the first event loop, then again immediately on the first timer callback. By flushing the timer queue at the end of the first event loop, you can run any zero-delay timers immediately and avoid the flicker.
 
-<a name="timerReplace" href="#timerReplace">#</a> <b>timerReplace</b>(<i>callback</i>[, <i>delay</i>[, <i>time</i>]])
-
-Replace the current timer’s *callback*, *delay* and *time*. This method can only be called within a timer callback, and is equivalent to [timer](#timer), except that it replaces the current timer rather than scheduling a new timer.
-
 ## Changes from D3 3.x:
+
+* Returning a truthy value from the timer callback no longer has any effect; use [*timer*.stop](#timer_stop) to stop a timer. You can now stop a timer from outside its callback.
+
+* The timerReplace method has been replaced by [*timer*.restart](#timer_restart). You can now restart a timer outside its callback.
 
 * Timer callbacks are now passed the current time as a second argument, in addition to the elapsed time; this is useful for precise scheduling of secondary timers.
 
-* A new [timerReplace](#timerReplace) method has been added to replace the current timer within a timer callback.
-
 * The timer.flush method has been renamed [timerFlush](#timerFlush). This method now accepts an optional *time* argument representing the current time, and returns the time of the earliest next timer. Calling this method within a timer callback no longer causes a crash.
-
-* Calling [timer](#timer) within a timer callback no longer makes a duplicate requestAnimationFrame. Calling this method with a delay greater than 24ms when no earlier timers are active guarantees a setTimeout rather than a requestAnimationFrame.
