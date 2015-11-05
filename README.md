@@ -45,7 +45,7 @@ Use *delay* and *time* to specify relative and absolute moments in time when the
 timer(callback, -4 * 1000 * 60 * 60, new Date(2012, 09, 29)); // four hours before midnight October 29 (months are zero-based)
 ```
 
-If [timer](#timer) is called within the callback of another timer, the new timer callback (if eligible as determined by the specified *delay* and *time*) will be invoked immediately at the end of the current frame, rather than waiting until the next frame.
+If [timer](#timer) is called within the callback of another timer, the new timer callback (if eligible as determined by the specified *delay* and *time*) will be invoked immediately at the end of the current frame, rather than waiting until the next frame. Within a frame, timer callbacks are guaranteed to be invoked in the order they were scheduled (regardless of their start time).
 
 <a name="timer_restart" href="#timer_restart">#</a> <i>timer</i>.<b>restart</b>(<i>callback</i>[, <i>delay</i>[, <i>time</i>]])
 
