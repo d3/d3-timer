@@ -41,6 +41,14 @@ tape("timer(callback) invokes the callback until the timer is stopped", function
   });
 });
 
+tape("timer(callback) uses the global context for the callback", function(test) {
+  var t = timer.timer(function() {
+    test.equal(this, global);
+    t.stop();
+    end(test);
+  });
+});
+
 tape("timer(callback) passes the callback the elapsed and current time", function(test) {
   var start = Date.now(), count = 0;
   var t = timer.timer(function(elapsed, now) {
