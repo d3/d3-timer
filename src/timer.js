@@ -1,7 +1,9 @@
-var queueHead,
-    queueTail,
-    frame = 0, // is an animation frame pending?
-    timeout = 0; // is a timeout pending?
+var frame = 0, // is an animation frame pending?
+    timeout = 0, // is a timeout pending?
+    taskHead,
+    taskTail,
+    taskId = 0,
+    taskById = {};
 
 var setFrame = typeof window !== "undefined"
     && (window.requestAnimationFrame
@@ -11,25 +13,31 @@ var setFrame = typeof window !== "undefined"
       || window.oRequestAnimationFrame)
       || function(callback) { return setTimeout(callback, 17); };
 
-// TODO These fields should be really private, like, inaccessible?
 function Timer(callback, delay, time) {
-  this.reset(callback, delay, time);
-  this.next = null;
-  if (queueTail) queueTail.next = this;
-  else queueHead = this;
-  queueTail = this;
+  this.id = ++taskId;
+  this.restart(callback, delay, time);
 }
 
-Timer.prototype = {
-  reset: function(callback, delay, time) {
-    this.callback = callback;
-    this.time = (time == null ? Date.now() : +time) + (delay == null ? 0 : +delay);
+Timer.prototype = timer.prototype = {
+  restart: function(callback, delay, time) {
+    time = (time == null ? Date.now() : +time) + (delay == null ? 0 : +delay);
+    var i = this.id, t = taskById[i];
+    if (t) {
+      t.callback = callback, t.time = time;
+    } else {
+      t = {next: null, callback: callback, time: time, timer: this};
+      if (taskTail) taskTail.next = t; else taskHead = t;
+      taskById[i] = taskTail = t;
+    }
     sleep();
   },
   stop: function() {
-    this.callback = null;
-    this.time = Infinity;
-    sleep();
+    var i = this.id, t = taskById[i];
+    if (t) {
+      t.callback = null, t.time = Infinity;
+      delete taskById[i];
+      sleep();
+    }
   }
 };
 
@@ -39,11 +47,11 @@ export function timer(callback, delay, time) {
 
 export function timerFlush(time) {
   time = time == null ? Date.now() : +time;
-  ++frame;
+  ++frame; // Pretend we’ve set an alarm, if we haven’t already.
   try {
-    var t = queueHead;
+    var t = taskHead;
     while (t) {
-      if (time >= t.time) t.callback(time - t.time, time);
+      if (time >= t.time) t.callback.call(t.timer, time - t.time, time);
       t = t.next;
     }
   } finally {
@@ -56,16 +64,16 @@ function wake() {
   try {
     timerFlush();
   } finally {
-    var t0, t1 = queueHead, time = Infinity;
+    var t0, t1 = taskHead, time = Infinity;
     while (t1) {
       if (t1.callback) {
         if (time > t1.time) time = t1.time;
         t1 = (t0 = t1).next;
       } else {
-        t1 = t0 ? t0.next = t1.next : queueHead = t1.next;
+        t1 = t0 ? t0.next = t1.next : taskHead = t1.next;
       }
     }
-    queueTail = t0;
+    taskTail = t0;
     sleep(time);
   }
 }
