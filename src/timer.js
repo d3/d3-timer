@@ -25,7 +25,7 @@ Timer.prototype = timer.prototype = {
     if (t) {
       t.callback = callback, t.time = time;
     } else {
-      t = {next: null, callback: callback, time: time, timer: this};
+      t = {next: null, callback: callback, time: time};
       if (taskTail) taskTail.next = t; else taskHead = t;
       taskById[i] = taskTail = t;
     }
@@ -49,9 +49,9 @@ export function timerFlush(time) {
   time = time == null ? Date.now() : +time;
   ++frame; // Pretend we’ve set an alarm, if we haven’t already.
   try {
-    var t = taskHead;
+    var t = taskHead, c;
     while (t) {
-      if (time >= t.time) t.callback.call(t.timer, time - t.time, time);
+      if (time >= t.time) c = t.callback, c(time - t.time, time);
       t = t.next;
     }
   } finally {
