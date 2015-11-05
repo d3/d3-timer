@@ -83,5 +83,5 @@ function sleep(time) {
   if (timeout) timeout = clearTimeout(timeout);
   var delay = time - Date.now();
   if (delay > 24) { if (time < Infinity) timeout = setTimeout(wake, delay); }
-  else frame = setFrame(wake);
+  else frame = 1, setFrame(wake);
 }
