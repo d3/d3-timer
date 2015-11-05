@@ -12,7 +12,7 @@ If you use NPM, `npm install d3-timer`. Otherwise, download the [latest release]
 
 Schedules a new timer, invoking the specified *callback* repeatedly until the timer is [stopped](#timer_stop). An optional numeric *delay* in milliseconds may be specified to invoke the given *callback* after a delay; if *delay* is not specified, it defaults to zero. The delay is relative to the specified *time* in milliseconds since UNIX epoch; if *time* is not specified, it defaults to [Date.now](https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Date/now).
 
-The *callback* is passed two arguments when it is invoked: the elapsed time since the timer became active, and the current time. The latter is useful for precise scheduling of secondary timers. For example:
+The *callback* is passed two arguments when it is invoked: the elapsed time since the timer became active and the current time. The latter is useful for precise scheduling of secondary timers. For example:
 
 ```js
 var t = timer(function(elapsed, time) {
