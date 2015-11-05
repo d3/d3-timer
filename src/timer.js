@@ -20,6 +20,7 @@ function Timer(callback, delay, time) {
 
 Timer.prototype = timer.prototype = {
   restart: function(callback, delay, time) {
+    if (typeof callback !== "function") throw new TypeError("callback is not a function");
     time = (time == null ? Date.now() : +time) + (delay == null ? 0 : +delay);
     var i = this.id, t = taskById[i];
     if (t) {

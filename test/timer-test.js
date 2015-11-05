@@ -18,6 +18,13 @@ tape("timer(callback) returns an instanceof timer", function(test) {
   end(test);
 });
 
+tape("timer(callback) verifies that callback is a function", function(test) {
+  test.throws(function() { timer.timer(); }, TypeError);
+  test.throws(function() { timer.timer("42"); }, TypeError);
+  test.throws(function() { timer.timer(null); }, TypeError);
+  test.end();
+});
+
 // It’s difficult to test the timing behavior reliably, since there can be small
 // hiccups that cause a timer to be delayed. So we test only the mean rate.
 tape("timer(callback) invokes the callback about every 17ms", function(test) {
@@ -323,7 +330,25 @@ tape("timer.stop() recomputes the new wake time after one frame", function(test)
   }, 100);
 });
 
-tape("timer.restart() recomputes the new wake time after one frame", function(test) {
+tape("timer.restart(callback) verifies that callback is a function", function(test) {
+  var t = timer.timer(function() {});
+  test.throws(function() { t.restart(); }, TypeError);
+  test.throws(function() { t.restart(null); }, TypeError);
+  test.throws(function() { t.restart("42"); }, TypeError);
+  t.stop();
+  end(test);
+});
+
+tape("timer.restart(callback) implicitly uses zero delay and the current time", function(test) {
+  var t = timer.timer(function() {}, 1000);
+  t.restart(function(elapsed) {
+    test.inRange(elapsed, 17 - 10, 17 + 10);
+    t.stop();
+    end(test);
+  });
+});
+
+tape("timer.restart(callback, delay, time) recomputes the new wake time after one frame", function(test) {
   var then = Date.now(),
       setTimeout0 = setTimeout,
       delays = [];
@@ -368,6 +393,14 @@ tape("timer.restart() recomputes the new wake time after one frame", function(te
       }, 100);
     }, 100);
   }, 100);
+});
+
+tape("timer.id is a positive integer", function(test) {
+  var t = timer.timer(function() {});
+  test.ok(t.id > 0);
+  test.equal(t.id % 1, 0);
+  t.stop();
+  end(test);
 });
 
 tape("timerFlush() immediately invokes any eligible timers", function(test) {
