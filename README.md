@@ -69,7 +69,7 @@ Note that zero-delay timers are normally first executed after one frame (~17ms).
 
 * Returning a truthy value from the timer callback no longer has any effect; use [*timer*.stop](#timer_stop) instead. You can now stop a timer outside its callback.
 
-* The timerReplace method has been replaced by [*timer*.restart](#timer_restart). You can now restart a timer outside its callback.
+* The timerReplace method has been replaced by [*timer*.restart](#timer_restart). You can now restart (replace) a timer outside its callback.
 
 * Timer callbacks are now passed the current time as a second argument, in addition to the elapsed time; this is useful for precise scheduling of secondary timers.
 
