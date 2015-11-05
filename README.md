@@ -67,7 +67,7 @@ Note that zero-delay timers are normally first executed after one frame (~17ms).
 
 ## Changes from D3 3.x:
 
-* Returning a truthy value from the timer callback no longer has any effect; use [*timer*.stop](#timer_stop) to stop a timer. You can now stop a timer from outside its callback.
+* Returning a truthy value from the timer callback no longer has any effect; use [*timer*.stop](#timer_stop) instead. You can now stop a timer from outside its callback.
 
 * The timerReplace method has been replaced by [*timer*.restart](#timer_restart). You can now restart a timer outside its callback.
 
