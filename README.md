@@ -37,7 +37,7 @@ This produced the following console output:
 213 1433806724409
 ```
 
-Note that the first *elapsed* is 6ms, since this is the elapsed time since the timer started, not the elapsed time since the timer was scheduled.
+Note that the first *elapsed* is 6ms, since this is the elapsed time since the timer started (after the 150ms delay), not the elapsed time since the timer was scheduled.
 
 Use *delay* and *time* to specify relative and absolute moments in time when the *callback* should start being invoked. For example, a calendar notification might be coded as:
 
