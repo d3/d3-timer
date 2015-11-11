@@ -1,6 +1,6 @@
 {
   "name": "d3-timer",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "An efficient queue capable of managing thousands of concurrent animations.",
   "keywords": [
     "d3",
@@ -17,20 +17,20 @@
     "name": "Mike Bostock",
     "url": "http://bost.ocks.org/mike"
   },
-  "main": "build/timer.cjs",
+  "main": "build/d3-timer.js",
   "jsnext:main": "index",
   "repository": {
     "type": "git",
     "url": "https://github.com/d3/d3-timer.git"
   },
   "scripts": {
-    "pretest": "mkdir -p build && d3-bundler -x -f cjs -o build/timer.cjs.js",
+    "pretest": "mkdir -p build && node -e 'process.stdout.write(\"var version = \\\"\" + require(\"./package.json\").version + \"\\\"; export * from \\\"../index\\\"; export {version};\");' > build/bundle.js && rollup -f umd -u d3-timer -n d3_timer -o build/d3-timer.js -- build/bundle.js",
     "test": "faucet `find test -name '*-test.js'`",
-    "prepublish": "npm run test && d3-bundler -n timer -o build/timer.js && uglifyjs build/timer.js -c -m -o build/timer.min.js && rm -f build/timer.zip && zip -j build/timer.zip -- LICENSE README.md build/timer.js build/timer.min.js"
+    "prepublish": "npm run test && uglifyjs build/d3-timer.js -c -m -o build/d3-timer.min.js && rm -f build/d3-timer.zip && zip -j build/d3-timer.zip -- LICENSE README.md build/d3-timer.js build/d3-timer.min.js"
   },
   "devDependencies": {
-    "d3-bundler": "~0.4.0",
     "faucet": "0.0",
+    "rollup": "0.20.5",
     "tape": "4",
     "uglify-js": "2"
   }
