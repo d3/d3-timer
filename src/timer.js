@@ -44,7 +44,7 @@ Timer.prototype = timer.prototype = {
 
 export function timer(callback, delay, time) {
   return new Timer(callback, delay, time);
-};
+}
 
 export function timerFlush(time) {
   time = time == null ? Date.now() : +time;
@@ -58,7 +58,7 @@ export function timerFlush(time) {
   } finally {
     --frame;
   }
-};
+}
 
 function wake() {
   frame = timeout = 0;
