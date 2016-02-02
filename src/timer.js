@@ -13,9 +13,8 @@ var setFrame = typeof window !== "undefined"
       || window.oRequestAnimationFrame)
       || function(callback) { return setTimeout(callback, 17); };
 
-function Timer(callback, delay, time) {
+function Timer() {
   this.id = ++taskId;
-  this.restart(callback, delay, time);
 }
 
 Timer.prototype = timer.prototype = {
@@ -43,16 +42,24 @@ Timer.prototype = timer.prototype = {
 };
 
 export function timer(callback, delay, time) {
-  return new Timer(callback, delay, time);
+  var t = new Timer;
+  t.restart(callback, delay, time);
+  return t;
 }
 
-export function timerFlush(time) {
-  time = time == null ? Date.now() : +time;
+export function timerOnce(callback, delay, time) {
+  var t = new Timer;
+  t.restart(function(elapsed, now) { t.stop(); callback(elapsed, now); }, delay, time);
+  return t;
+}
+
+export function timerFlush(now) {
+  now = now == null ? Date.now() : +now;
   ++frame; // Pretend we’ve set an alarm, if we haven’t already.
   try {
     var t = taskHead, c;
     while (t) {
-      if (time >= t.time) c = t.callback, c(time - t.time, time);
+      if (now >= t.time) c = t.callback, c(now - t.time, now);
       t = t.next;
     }
   } finally {
