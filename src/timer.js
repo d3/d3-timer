@@ -1,9 +1,7 @@
 var frame = 0, // is an animation frame pending?
     timeout = 0, // is a timeout pending?
     taskHead,
-    taskTail,
-    taskId = 0,
-    taskById = {};
+    taskTail;
 
 var setFrame = typeof window !== "undefined"
     && (window.requestAnimationFrame
@@ -14,28 +12,28 @@ var setFrame = typeof window !== "undefined"
       || function(callback) { return setTimeout(callback, 17); };
 
 function Timer() {
-  this.id = ++taskId;
+  this._call =
+  this._time =
+  this._next = null;
 }
 
 Timer.prototype = timer.prototype = {
   restart: function(callback, delay, time) {
     if (typeof callback !== "function") throw new TypeError("callback is not a function");
     time = (time == null ? Date.now() : +time) + (delay == null ? 0 : +delay);
-    var i = this.id, t = taskById[i];
-    if (t) {
-      t.callback = callback, t.time = time;
-    } else {
-      t = {next: null, callback: callback, time: time};
-      if (taskTail) taskTail.next = t; else taskHead = t;
-      taskById[i] = taskTail = t;
+    if (!this._call) {
+      if (taskTail) taskTail._next = this;
+      else taskHead = this;
+      taskTail = this;
     }
+    this._call = callback;
+    this._time = time;
     sleep();
   },
   stop: function() {
-    var i = this.id, t = taskById[i];
-    if (t) {
-      t.callback = null, t.time = Infinity;
-      delete taskById[i];
+    if (this._call) {
+      this._call = null;
+      this._time = Infinity;
       sleep();
     }
   }
@@ -56,15 +54,26 @@ export function timerOnce(callback, delay, time) {
 export function timerFlush(now) {
   now = now == null ? Date.now() : +now;
   ++frame; // Pretend we’ve set an alarm, if we haven’t already.
-  try {
-    var t = taskHead, c;
-    while (t) {
-      if (now >= t.time) c = t.callback, c(now - t.time, now);
-      t = t.next;
-    }
-  } finally {
-    --frame;
+  var t = taskHead;
+  while (t) {
+    if (now >= t._time) t._call.call(null, now - t._time, now);
+    t = t._next;
   }
+  --frame;
+}
+
+function timerSweep() {
+  var t0, t1 = taskHead, time = Infinity;
+  while (t1) {
+    if (t1._call) {
+      if (time > t1._time) time = t1._time;
+      t1 = (t0 = t1)._next;
+    } else {
+      t1 = t0 ? t0._next = t1._next : taskHead = t1._next;
+    }
+  }
+  taskTail = t0;
+  return time;
 }
 
 function wake() {
@@ -72,17 +81,8 @@ function wake() {
   try {
     timerFlush();
   } finally {
-    var t0, t1 = taskHead, time = Infinity;
-    while (t1) {
-      if (t1.callback) {
-        if (time > t1.time) time = t1.time;
-        t1 = (t0 = t1).next;
-      } else {
-        t1 = t0 ? t0.next = t1.next : taskHead = t1.next;
-      }
-    }
-    taskTail = t0;
-    sleep(time);
+    frame = 0;
+    sleep(timerSweep());
   }
 }
 

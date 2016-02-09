@@ -387,11 +387,3 @@ tape("timer.restart(callback, delay, time) recomputes the new wake time after on
     }, 100);
   }, 100);
 });
-
-tape("timer.id is a positive integer", function(test) {
-  var t = timer.timer(function() {});
-  test.ok(t.id > 0);
-  test.equal(t.id % 1, 0);
-  t.stop();
-  end(test);
-});

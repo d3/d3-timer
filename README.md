@@ -7,7 +7,7 @@ This module provides an efficient queue capable of managing thousands of concurr
 If you use NPM, `npm install d3-timer`. Otherwise, download the [latest release](https://github.com/d3/d3-timer/releases/latest). The released bundle supports AMD, CommonJS, and vanilla environments. Create a custom build using [Rollup](https://github.com/rollup/rollup) or your preferred bundler. You can also load directly from [d3js.org](https://d3js.org):
 
 ```html
-<script src="https://d3js.org/d3-timer.v0.1.min.js"></script>
+<script src="https://d3js.org/d3-timer.v0.2.min.js"></script>
 ```
 
 In a vanilla environment, a `d3_timer` global is exported. [Try d3-timer in your browser.](https://tonicdev.com/npm/d3-timer)
@@ -55,15 +55,11 @@ If [timer](#timer) is called within the callback of another timer, the new timer
 
 <a name="timer_restart" href="#timer_restart">#</a> <i>timer</i>.<b>restart</b>(<i>callback</i>[, <i>delay</i>[, <i>time</i>]])
 
-Restart a timer with the specified *callback* and optional *delay* and *time*. This is equivalent to stopping this timer and creating a new timer with the specified arguments, although this timer retains the original [id](#timer_id) and invocation priority.
+Restart a timer with the specified *callback* and optional *delay* and *time*. This is equivalent to stopping this timer and creating a new timer with the specified arguments, although this timer retains the original invocation priority.
 
 <a name="timer_stop" href="#timer_stop">#</a> <i>timer</i>.<b>stop</b>()
 
 Stops this timer, preventing subsequent callbacks. This method has no effect if the timer has already stopped.
-
-<a name="timer_id" href="#timer_id">#</a> <i>timer</i>.<b>id</b>
-
-An opaque, unique identifier for this timer.
 
 <a name="timerOnce" href="#timerOnce">#</a> d3.<b>timerOnce</b>(<i>callback</i>[, <i>delay</i>[, <i>time</i>]])
 
