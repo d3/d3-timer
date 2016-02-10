@@ -1,7 +1,10 @@
 var frame = 0, // is an animation frame pending?
     timeout = 0, // is a timeout pending?
+    interval = 0, // are any timers active?
+    maxDelay = 5000, // the longest we’ll sleep if there are active timers
     taskHead,
     taskTail,
+    clockLast = 0,
     clockNow = 0,
     clock = typeof performance === "object" ? performance : Date,
     setFrame = typeof requestAnimationFrame === "function" ? requestAnimationFrame : function(callback) { return setTimeout(callback, 17); };
@@ -66,7 +69,7 @@ export function timerFlush() {
 }
 
 function wake(time) {
-  clockNow = time || clock.now();
+  clockLast = clockNow = time || clock.now();
   frame = timeout = 0;
   try {
     timerFlush();
@@ -74,6 +77,12 @@ function wake(time) {
     frame = 0;
     nap();
     clockNow = 0;
+  }
+}
+
+function poke() {
+  if (clock.now() - clockLast > maxDelay) {
+    wake();
   }
 }
 
@@ -95,6 +104,11 @@ function sleep(time) {
   if (frame) return; // Soonest alarm already set, or will be.
   if (timeout) timeout = clearTimeout(timeout);
   var delay = time - clockNow;
-  if (delay > 24) { if (time < Infinity) timeout = setTimeout(wake, delay); }
-  else frame = 1, setFrame(wake);
+  if (delay > 24) {
+    if (time < Infinity) timeout = setTimeout(wake, delay);
+    else if (interval) interval = clearInterval(interval);
+  } else {
+    if (!interval) interval = setInterval(poke, maxDelay);
+    frame = 1, setFrame(wake);
+  }
 }
