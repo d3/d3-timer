@@ -314,7 +314,7 @@ tape("timer.stop() recomputes the new wake time after one frame", function(test)
 
       // 3. The alarm was reset to wake for the long-delay timer.
       test.equal(delays.length, 4);
-      test.inRange(delays[3], 1000 - 100 - 17 * 2 - 10, 1000 - 100 - 17 * 2 + 10);
+      test.inRange(delays[3], 1000 - 100 - 17 * 1.5 - 10, 1000 - 100 - 17 * 1.5 + 10);
 
       t0.stop();
 
@@ -379,7 +379,7 @@ tape("timer.restart(callback, delay, time) recomputes the new wake time after on
 
       // 3. The alarm was reset to wake for the longer delay.
       test.equal(delays.length, 4);
-      test.inRange(delays[3], 1000 - 100 - 17 * 2 - 10, 1000 - 100 - 17 * 2 + 10);
+      test.inRange(delays[3], 1000 - 100 - 17 * 1.5 - 10, 1000 - 100 - 17 * 1.5 + 10);
 
       t.stop();
 
