@@ -1,15 +1,18 @@
 var frame = 0, // is an animation frame pending?
     timeout = 0, // is a timeout pending?
     taskHead,
-    taskTail;
+    taskTail,
+    clockNow = 0,
+    clock = typeof performance === "object" ? performance : Date,
+    setFrame = typeof requestAnimationFrame === "function" ? requestAnimationFrame : function(callback) { return setTimeout(callback, 17); };
 
-var setFrame = typeof window !== "undefined"
-    && (window.requestAnimationFrame
-      || window.msRequestAnimationFrame
-      || window.mozRequestAnimationFrame
-      || window.webkitRequestAnimationFrame
-      || window.oRequestAnimationFrame)
-      || function(callback) { return setTimeout(callback, 17); };
+export function now() {
+  return clockNow || (setFrame(clearNow), clockNow = clock.now());
+}
+
+function clearNow() {
+  clockNow = 0;
+}
 
 function Timer() {
   this._call =
@@ -20,7 +23,7 @@ function Timer() {
 Timer.prototype = timer.prototype = {
   restart: function(callback, delay, time) {
     if (typeof callback !== "function") throw new TypeError("callback is not a function");
-    time = (time == null ? Date.now() : +time) + (delay == null ? 0 : +delay);
+    time = (time == null ? now() : +time) + (delay == null ? 0 : +delay);
     if (!this._call) {
       if (taskTail) taskTail._next = this;
       else taskHead = this;
@@ -47,22 +50,34 @@ export function timer(callback, delay, time) {
 
 export function timerOnce(callback, delay, time) {
   var t = new Timer;
-  t.restart(function(elapsed, now) { t.stop(); callback(elapsed, now); }, delay, time);
+  t.restart(function(elapsed) { t.stop(); callback(elapsed); }, delay, time);
   return t;
 }
 
-export function timerFlush(now) {
-  now = now == null ? Date.now() : +now;
+export function timerFlush() {
+  now(); // Get the current time, if not already set.
   ++frame; // Pretend we’ve set an alarm, if we haven’t already.
   var t = taskHead;
   while (t) {
-    if (now >= t._time) t._call.call(null, now - t._time, now);
+    if (clockNow >= t._time) t._call.call(null, clockNow - t._time);
     t = t._next;
   }
   --frame;
 }
 
-function timerSweep() {
+function wake(time) {
+  clockNow = time || clock.now();
+  frame = timeout = 0;
+  try {
+    timerFlush();
+  } finally {
+    frame = 0;
+    nap();
+    clockNow = 0;
+  }
+}
+
+function nap() {
   var t0, t1 = taskHead, time = Infinity;
   while (t1) {
     if (t1._call) {
@@ -73,23 +88,13 @@ function timerSweep() {
     }
   }
   taskTail = t0;
-  return time;
-}
-
-function wake() {
-  frame = timeout = 0;
-  try {
-    timerFlush();
-  } finally {
-    frame = 0;
-    sleep(timerSweep());
-  }
+  sleep(time);
 }
 
 function sleep(time) {
   if (frame) return; // Soonest alarm already set, or will be.
   if (timeout) timeout = clearTimeout(timeout);
-  var delay = time - Date.now();
+  var delay = time - clockNow;
   if (delay > 24) { if (time < Infinity) timeout = setTimeout(wake, delay); }
   else frame = 1, setFrame(wake);
 }

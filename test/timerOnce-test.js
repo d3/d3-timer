@@ -13,19 +13,19 @@ tape("timerOnce(callback) invokes the callback once", function(test) {
 });
 
 tape("timerOnce(callback, delay) invokes the callback once after the specified delay", function(test) {
-  var time = Date.now(), delay = 50;
-  timer.timerOnce(function(elapsed, now) {
-    test.inRange(now - time, delay - 10, delay + 10);
+  var then = timer.now(), delay = 50;
+  timer.timerOnce(function(elapsed) {
+    test.inRange(timer.now() - then, delay - 10, delay + 10);
     end(test);
   }, delay);
 });
 
 tape("timerOnce(callback, delay, time) invokes the callback once after the specified delay relative to the given time", function(test) {
-  var time = Date.now() + 50, delay = 50;
-  timer.timerOnce(function(elapsed, now) {
-    test.inRange(now - time, delay - 10, delay + 10);
+  var then = timer.now() + 50, delay = 50;
+  timer.timerOnce(function(elapsed) {
+    test.inRange(timer.now() - then, delay - 10, delay + 10);
     end(test);
-  }, delay, time);
+  }, delay, then);
 });
 
 tape("timerOnce(callback) uses the global context for the callback", function(test) {
@@ -35,13 +35,12 @@ tape("timerOnce(callback) uses the global context for the callback", function(te
   });
 });
 
-tape("timerOnce(callback) passes the callback the elapsed and current time", function(test) {
-  var time = Date.now(), count = 0;
-  timer.timerOnce(function(elapsed, now) {
-    test.equal(elapsed, now - time);
-    test.inRange(now, Date.now() - 10, Date.now());
+tape("timerOnce(callback) passes the callback the elapsed time", function(test) {
+  var then = timer.now(), count = 0;
+  timer.timerOnce(function(elapsed) {
+    test.equal(elapsed, timer.now() - then);
     end(test);
-  }, 0, time);
+  });
 });
 
 tape("timerOnce(callback) returns a timer", function(test) {

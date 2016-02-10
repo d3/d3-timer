@@ -19,14 +19,14 @@ tape("timerFlush() within timerFlush() still executes all eligible timers", func
   end(test);
 });
 
-tape("timerFlush(time) observes the specified time", function(test) {
-  var start = Date.now(), count = 0;
-  var t = timer.timer(function() { if (++count >= 2) t.stop(); }, 0, start);
-  timer.timerFlush(start - 1);
-  test.equal(count, 0);
-  timer.timerFlush(start);
-  test.equal(count, 1);
-  timer.timerFlush(start + 1);
-  test.equal(count, 2);
+tape("timerFlush() observes the current time", function(test) {
+  var start = timer.now(), foos = 0, bars = 0, bazs = 0;
+  var foo = timer.timer(function() { ++foos; foo.stop(); }, 0, start + 1);
+  var bar = timer.timer(function() { ++bars; bar.stop(); }, 0, start);
+  var baz = timer.timer(function() { ++bazs; baz.stop(); }, 0, start - 1);
+  timer.timerFlush();
+  test.equal(foos, 0);
+  test.equal(bars, 1);
+  test.equal(bazs, 1);
   end(test);
 });

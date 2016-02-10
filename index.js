@@ -1,4 +1,5 @@
 export {
+  now,
   timer,
   timerOnce,
   timerFlush
