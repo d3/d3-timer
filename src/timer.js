@@ -60,9 +60,9 @@ export function timerOnce(callback, delay, time) {
 export function timerFlush() {
   now(); // Get the current time, if not already set.
   ++frame; // Pretend we’ve set an alarm, if we haven’t already.
-  var t = taskHead;
+  var t = taskHead, e;
   while (t) {
-    if (clockNow >= t._time) t._call.call(null, clockNow - t._time);
+    if ((e = clockNow - t._time) >= 0) t._call.call(null, e);
     t = t._next;
   }
   --frame;
