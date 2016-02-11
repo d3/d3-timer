@@ -1,16 +1,17 @@
 var frame = 0, // is an animation frame pending?
     timeout = 0, // is a timeout pending?
     interval = 0, // are any timers active?
-    maxDelay = 5000, // the longest we’ll sleep if there are active timers
+    pokeDelay = 1000, // how frequently we check for clock skew
     taskHead,
     taskTail,
     clockLast = 0,
     clockNow = 0,
+    clockSkew = 0,
     clock = typeof performance === "object" ? performance : Date,
     setFrame = typeof requestAnimationFrame === "function" ? requestAnimationFrame : function(callback) { return setTimeout(callback, 17); };
 
 export function now() {
-  return clockNow || (setFrame(clearNow), clockNow = clock.now());
+  return clockNow || (setFrame(clearNow), clockNow = clock.now() + clockSkew);
 }
 
 function clearNow() {
@@ -69,7 +70,7 @@ export function timerFlush() {
 }
 
 function wake(time) {
-  clockLast = clockNow = time || clock.now();
+  clockNow = (clockLast = time || clock.now()) + clockSkew;
   frame = timeout = 0;
   try {
     timerFlush();
@@ -81,9 +82,8 @@ function wake(time) {
 }
 
 function poke() {
-  if (clock.now() - clockLast > maxDelay) {
-    wake();
-  }
+  var now = clock.now(), delay = now - clockLast;
+  if (delay > pokeDelay) clockSkew -= delay, clockLast = now;
 }
 
 function nap() {
@@ -106,9 +106,9 @@ function sleep(time) {
   var delay = time - clockNow;
   if (delay > 24) {
     if (time < Infinity) timeout = setTimeout(wake, delay);
-    else if (interval) interval = clearInterval(interval);
+    if (interval) interval = clearInterval(interval);
   } else {
-    if (!interval) interval = setInterval(poke, maxDelay);
+    if (!interval) interval = setInterval(poke, pokeDelay);
     frame = 1, setFrame(wake);
   }
 }
