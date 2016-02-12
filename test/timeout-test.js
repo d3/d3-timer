@@ -4,48 +4,48 @@ var tape = require("tape"),
 
 require("./inRange");
 
-tape("timerOnce(callback) invokes the callback once", function(test) {
+tape("timeout(callback) invokes the callback once", function(test) {
   var count = 0;
-  timer.timerOnce(function() {
+  timer.timeout(function() {
     test.equal(++count, 1);
     end(test);
   });
 });
 
-tape("timerOnce(callback, delay) invokes the callback once after the specified delay", function(test) {
+tape("timeout(callback, delay) invokes the callback once after the specified delay", function(test) {
   var then = timer.now(), delay = 50;
-  timer.timerOnce(function(elapsed) {
+  timer.timeout(function(elapsed) {
     test.inRange(timer.now() - then, delay - 10, delay + 10);
     end(test);
   }, delay);
 });
 
-tape("timerOnce(callback, delay, time) invokes the callback once after the specified delay relative to the given time", function(test) {
+tape("timeout(callback, delay, time) invokes the callback once after the specified delay relative to the given time", function(test) {
   var then = timer.now() + 50, delay = 50;
-  timer.timerOnce(function(elapsed) {
+  timer.timeout(function(elapsed) {
     test.inRange(timer.now() - then, delay - 10, delay + 10);
     end(test);
   }, delay, then);
 });
 
-tape("timerOnce(callback) uses the global context for the callback", function(test) {
-  timer.timerOnce(function() {
+tape("timeout(callback) uses the global context for the callback", function(test) {
+  timer.timeout(function() {
     test.equal(this, global);
     end(test);
   });
 });
 
-tape("timerOnce(callback) passes the callback the elapsed time", function(test) {
+tape("timeout(callback) passes the callback the elapsed time", function(test) {
   var then = timer.now(), count = 0;
-  timer.timerOnce(function(elapsed) {
+  timer.timeout(function(elapsed) {
     test.equal(elapsed, timer.now() - then);
     end(test);
   });
 });
 
-tape("timerOnce(callback) returns a timer", function(test) {
+tape("timeout(callback) returns a timer", function(test) {
   var count = 0;
-  var t = timer.timerOnce(function() { ++count; });
+  var t = timer.timeout(function() { ++count; });
   test.equal(t instanceof timer.timer, true);
   t.stop();
   setTimeout(function() {

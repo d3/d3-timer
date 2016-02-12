@@ -18,7 +18,7 @@ function clearNow() {
   clockNow = 0;
 }
 
-function Timer() {
+export function Timer() {
   this._call =
   this._time =
   this._next = null;
@@ -49,12 +49,6 @@ Timer.prototype = timer.prototype = {
 export function timer(callback, delay, time) {
   var t = new Timer;
   t.restart(callback, delay, time);
-  return t;
-}
-
-export function timerOnce(callback, delay, time) {
-  var t = new Timer;
-  t.restart(function(elapsed) { t.stop(); callback(elapsed); }, delay, time);
   return t;
 }
 
