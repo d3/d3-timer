@@ -18,38 +18,39 @@ function clearNow() {
   clockNow = 0;
 }
 
-export function Timer() {
-  this._call =
-  this._time =
+export function Timer(callback, that) {
+  this.rebind(callback, that);
   this._next = null;
+  this._time = Infinity;
 }
 
 Timer.prototype = timer.prototype = {
-  restart: function(callback, delay, time) {
+  rebind: function(callback, that) {
     if (typeof callback !== "function") throw new TypeError("callback is not a function");
-    time = (time == null ? now() : +time) + (delay == null ? 0 : +delay);
-    if (!this._call) {
+    this._call = callback;
+    this._that = that;
+    return this;
+  },
+  start: function(time) {
+    if (time == null) time = now();
+    if (!(this._time < Infinity)) {
       if (taskTail) taskTail._next = this;
       else taskHead = this;
       taskTail = this;
     }
-    this._call = callback;
     this._time = time;
     sleep();
   },
   stop: function() {
-    if (this._call) {
-      this._call = null;
+    if (this._time < Infinity) {
       this._time = Infinity;
       sleep();
     }
   }
 };
 
-export function timer(callback, delay, time) {
-  var t = new Timer;
-  t.restart(callback, delay, time);
-  return t;
+export function timer(callback, that) {
+  return new Timer(callback, that);
 }
 
 export function timerFlush() {
@@ -57,7 +58,7 @@ export function timerFlush() {
   ++frame; // Pretend we’ve set an alarm, if we haven’t already.
   var t = taskHead, e;
   while (t) {
-    if ((e = clockNow - t._time) >= 0) t._call.call(null, e);
+    if ((e = clockNow - t._time) >= 0) t._call.call(t._that, e);
     t = t._next;
   }
   --frame;
@@ -83,7 +84,7 @@ function poke() {
 function nap() {
   var t0, t1 = taskHead, time = Infinity;
   while (t1) {
-    if (t1._call) {
+    if (t1._time < Infinity) {
       if (time > t1._time) time = t1._time;
       t1 = (t0 = t1)._next;
     } else {
