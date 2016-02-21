@@ -28,11 +28,11 @@ tape("interval(callback) invokes the callback until the timer is stopped", funct
 });
 
 tape("interval(callback, delay) invokes the callback about every delay milliseconds", function(test) {
-  var then = timer.now(), delay = 50, count = 0;
+  var then = timer.now(), delay = 50, nows = [then];
   var t = timer.interval(function() {
-    if (++count > 10) {
+    if (nows.push(timer.now()) > 10) {
       t.stop();
-      test.inRange(timer.now() - then, (delay - 5) * count, (delay + 5) * count);
+      nows.forEach(function(now, i) { test.inRange(now - then, delay * i - 10, delay * i + 10); });
       end(test);
     }
   }, delay);
