@@ -25,6 +25,7 @@ export function Timer() {
 }
 
 Timer.prototype = timer.prototype = {
+  constructor: Timer,
   restart: function(callback, delay, time) {
     if (typeof callback !== "function") throw new TypeError("callback is not a function");
     time = (time == null ? now() : +time) + (delay == null ? 0 : +delay);
