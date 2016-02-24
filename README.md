@@ -10,7 +10,7 @@ If you use NPM, `npm install d3-timer`. Otherwise, download the [latest release]
 <script src="https://d3js.org/d3-timer.v0.3.min.js"></script>
 <script>
 
-var timer = d3_timer.timer();
+var timer = d3_timer.timer(callback);
 
 </script>
 ```
