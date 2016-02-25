@@ -4,10 +4,10 @@ This module provides an efficient queue capable of managing thousands of concurr
 
 ## Installing
 
-If you use NPM, `npm install d3-timer`. Otherwise, download the [latest release](https://github.com/d3/d3-timer/releases/latest). You can also load directly from [d3js.org](https://d3js.org), either as a [standalone library](https://d3js.org/d3-timer.v0.3.min.js) or as part of [D3 4.0 alpha](https://github.com/mbostock/d3/tree/4). AMD, CommonJS, and vanilla environments are supported. In vanilla, a `d3_timer` global is exported:
+If you use NPM, `npm install d3-timer`. Otherwise, download the [latest release](https://github.com/d3/d3-timer/releases/latest). You can also load directly from [d3js.org](https://d3js.org), either as a [standalone library](https://d3js.org/d3-timer.v0.4.min.js) or as part of [D3 4.0 alpha](https://github.com/mbostock/d3/tree/4). AMD, CommonJS, and vanilla environments are supported. In vanilla, a `d3_timer` global is exported:
 
 ```html
-<script src="https://d3js.org/d3-timer.v0.3.min.js"></script>
+<script src="https://d3js.org/d3-timer.v0.4.min.js"></script>
 <script>
 
 var timer = d3_timer.timer(callback);
