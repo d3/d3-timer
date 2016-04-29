@@ -396,3 +396,14 @@ tape("timer.restart(callback, delay, time) recomputes the new wake time after on
     }, 100);
   }, 100);
 });
+
+tape("timer.stop() immediately followed by timer.restart() doesn’t cause an infinite loop", function(test) {
+  var t = timer.timer(function() {}), last;
+  t.stop();
+  t.restart(function(elapsed) {
+    if (!last) return last = elapsed;
+    if (elapsed === last) test.fail("repeated invocation");
+    t.stop();
+    test.end();
+  });
+});
