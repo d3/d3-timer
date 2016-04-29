@@ -407,3 +407,15 @@ tape("timer.stop() immediately followed by timer.restart() doesn’t cause an in
     test.end();
   });
 });
+
+tape("timer.stop() immediately followed by timer.restart() doesn’t cause an infinite loop (2)", function(test) {
+  var t0 = timer.timer(function() {}), t1 = timer.timer(function() {}), last;
+  t0.stop();
+  t0.restart(function(elapsed) {
+    if (!last) return last = elapsed;
+    if (elapsed === last) test.fail("repeated invocation");
+    t0.stop();
+    test.end();
+  });
+  t1.stop();
+});
