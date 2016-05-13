@@ -8,7 +8,9 @@ var frame = 0, // is an animation frame pending?
     clockNow = 0,
     clockSkew = 0,
     clock = typeof performance === "object" ? performance : Date,
-    setFrame = typeof requestAnimationFrame === "function" ? requestAnimationFrame : function(callback) { return setTimeout(callback, 17); };
+    setFrame = typeof requestAnimationFrame === "function"
+        ? (clock === Date ? function(f) { requestAnimationFrame(function() { f(clock.now()); }); } : requestAnimationFrame)
+        : function(f) { setTimeout(f, 17); };
 
 export function now() {
   return clockNow || (setFrame(clearNow), clockNow = clock.now() + clockSkew);
