@@ -30,6 +30,7 @@
     "postpublish": "VERSION=`node -e 'console.log(require(\"./package.json\").version)'`; git push && git push --tags && cp build/d3-timer.js ../d3.github.com/d3-timer.v0.4.js && cp build/d3-timer.min.js ../d3.github.com/d3-timer.v0.4.min.js && cd ../d3.github.com && git add d3-timer.v0.4.js d3-timer.v0.4.min.js && git commit -m \"d3-timer ${VERSION}\" && git push && cd - && zip -j build/d3-timer.zip -- LICENSE README.md build/d3-timer.js build/d3-timer.min.js"
   },
   "devDependencies": {
+    "eslint": "2",
     "json2module": "0.0",
     "rollup": "0.26",
     "tape": "4",
