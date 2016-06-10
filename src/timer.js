@@ -84,13 +84,14 @@ function poke() {
 }
 
 function nap() {
-  var t0, t1 = taskHead, time = Infinity;
+  var t0, t1 = taskHead, t2, time = Infinity;
   while (t1) {
     if (t1._call) {
       if (time > t1._time) time = t1._time;
-      t1 = (t0 = t1)._next;
+      t0 = t1, t1 = t1._next;
     } else {
-      t1 = t0 ? t0._next = t1._next : taskHead = t1._next;
+      t2 = t1._next, t1._next = null;
+      t1 = t0 ? t0._next = t2 : taskHead = t2;
     }
   }
   taskTail = t0;

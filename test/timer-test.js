@@ -419,3 +419,13 @@ tape("timer.stop() immediately followed by timer.restart() doesn’t cause an in
   });
   t1.stop();
 });
+
+tape("timer.stop() clears the internal _next field after a timeout", function(test) {
+  var t0 = timer.timer(function() {}), t1 = timer.timer(function() {});
+  t0.stop();
+  setTimeout(function() {
+    test.equal(!t0._next, true);
+    t1.stop();
+    test.end();
+  }, 100);
+});
