@@ -8,9 +8,7 @@ var frame = 0, // is an animation frame pending?
     clockNow = 0,
     clockSkew = 0,
     clock = typeof performance === "object" && performance.now ? performance : Date,
-    setFrame = typeof requestAnimationFrame === "function"
-        ? (clock === Date ? function(f) { requestAnimationFrame(function() { f(clock.now()); }); } : requestAnimationFrame)
-        : function(f) { setTimeout(f, 17); };
+    setFrame = typeof requestAnimationFrame === "function" ? requestAnimationFrame : function(f) { setTimeout(f, 17); };
 
 export function now() {
   return clockNow || (setFrame(clearNow), clockNow = clock.now() + clockSkew);
@@ -66,8 +64,8 @@ export function timerFlush() {
   --frame;
 }
 
-function wake(time) {
-  clockNow = (clockLast = time || clock.now()) + clockSkew;
+function wake() {
+  clockNow = (clockLast = clock.now()) + clockSkew;
   frame = timeout = 0;
   try {
     timerFlush();
