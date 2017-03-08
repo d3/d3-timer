@@ -1,5 +1,6 @@
 export {
   now,
+  clearNow,
   timer,
   timerFlush
 } from "./src/timer";
