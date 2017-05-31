@@ -14,7 +14,7 @@ export function now() {
   return clockNow || (setFrame(clearNow), clockNow = clock.now() + clockSkew);
 }
 
-function clearNow() {
+export function clearNow() {
   clockNow = 0;
 }
 
