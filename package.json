@@ -33,9 +33,9 @@
   },
   "devDependencies": {
     "eslint": "3",
-    "package-preamble": "0.0",
-    "rollup": "0.41",
+    "package-preamble": "0.1",
+    "rollup": "0.42",
     "tape": "4",
-    "uglify-js": "^2.8.11"
+    "uglify-js": "3"
   }
 }
