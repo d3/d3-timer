@@ -75,3 +75,23 @@ Like [timer](#timer), except the timer automatically [stops](#timer_stop) on its
 <a name="interval" href="#interval">#</a> d3.<b>interval</b>(<i>callback</i>[, <i>delay</i>[, <i>time</i>]]) [<>](https://github.com/d3/d3-timer/blob/master/src/interval.js "Source")
 
 Like [timer](#timer), except the *callback* is invoked only every *delay* milliseconds; if *delay* is not specified, this is equivalent to [timer](#timer). A suitable replacement for [setInterval](https://developer.mozilla.org/en-US/docs/Web/API/WindowTimers/setInterval) that is guaranteed to not run in the background. The *callback* is passed the elapsed time.
+
+<a name="pausableTimer" href="#pausableTimer">#</a> d3.<b>pausableTimer</b>(<i>callback</i>[, <i>delay</i>[, <i>time</i>]]) [<>](https://github.com/woodev01/d3-timer/blob/master/src/timer.js#L101 "Source")
+
+Like [timer](#timer), except the timer holds on to an internal state of total elapsed time. This allows the timer to pause and resume, yet rely on the elapsed time in the callback not to reset. The *callback* is passed the total internal elapsed time <i>not the elapsed time</i>.
+
+How this may be useful:
+
+If you had an animation like this [breathing color mesh](https://bl.ocks.org/enjalot/3ab590b9d1364dbcf4241389a2449ac5 "Source"), you may want a button to pause the "breathing" motion, then on a second button press you want to resume the animation. Because the animation relies on the <i>elapsed</i> parameter of the callback, the color mesh will completely reset if [stopped](#timer_stop). With [pause](#pausableTimer_pause) and [resume](#pausableTimer_resume), the mesh will continue "breathing" in whatever state it was paused at.
+
+<a name="pausableTimer_pause" href="#pausableTimer_pause">#</a> <i>pausableTimer</i>.<b>pause</b>() [<>](https://github.com/woodev01/d3-timer/blob/master/src/timer.js#L83 "Source")
+
+Pauses the timer, but does <i>not</i> reset the callback.
+
+<a name="pausableTimer_resume" href="#pausableTimer_resume">#</a> <i>pausableTimer</i>.<b>resume</b>() [<>](https://github.com/woodev01/d3-timer/blob/master/src/timer.js#L89 "Source")
+
+Resumes the timer. The callback should resume in the exact state that it was paused. 
+  
+<a name="pausableTimer_reset" href="#pausableTimer_reset">#</a> <i>pausableTimer</i>.<b>reset</b>() [<>](https://github.com/woodev01/d3-timer/blob/master/src/timer.js#L93 "Source")
+
+This simply resets the internal elapsed time state. It is a nice short-hand for restarting the callback if you don't need to change any parameters. 
