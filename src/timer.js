@@ -47,6 +47,63 @@ Timer.prototype = timer.prototype = {
   }
 };
 
+export function PausableTimer() {
+  this._call =
+  this._time =
+  this._next = null;
+  this._totalElapse =
+  this._lastElapse = 0;
+}
+
+PausableTimer.prototype = pausableTimer.prototype = {
+  constructor: PausableTimer,
+  restart: function(callback, delay, time) {
+    if (typeof callback !== "function") throw new TypeError("callback is not a function");
+    time = (time == null ? now() : +time) + (delay == null ? 0 : +delay);
+    if (!this._next && taskTail !== this) {
+      if (taskTail) taskTail._next = this;
+      else taskHead = this;
+      taskTail = this;
+    }
+    this._call = function(elapsed) {
+      this._totalElapse += (elapsed > this._lastElapse) ? (elapsed - this._lastElapse) : elapsed; 
+      this._lastElapse = elapsed;
+      callback(this._totalElapse);
+    }.bind(this);
+    this._time = time;
+    sleep();
+  },
+  stop: function() {
+    if (this._call) {
+      this._call = null;
+      this._time = Infinity;
+      sleep();
+    }
+  },
+  pause: function() {
+    if (this._call) {
+      this._time = Infinity;
+      sleep();
+    }
+  },
+  resume: function() {
+    this._time = now();
+    sleep();
+  },
+  reset: function() {
+    this._totalElapse =
+    this._lastElapse = 0;
+    this._time = now();
+    sleep();
+  }
+};
+
+export function pausableTimer(callback, delay, time) {
+  var pt = new PausableTimer;
+  pt.restart(callback, delay, time);
+  return pt;
+}
+
 export function timer(callback, delay, time) {
   var t = new Timer;
   t.restart(callback, delay, time);
