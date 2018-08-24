@@ -2,12 +2,12 @@ export {
   now,
   timer,
   timerFlush
-} from "./src/timer";
+} from "./timer";
 
 export {
   default as timeout
-} from "./src/timeout";
+} from "./timeout";
 
 export {
   default as interval
-} from "./src/interval";
+} from "./interval";
