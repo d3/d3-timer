@@ -7,7 +7,6 @@ require("./inRange");
 tape("timer(callback) returns an instanceof timer", function(test) {
   var t = timer.timer(function() {});
   test.equal(t instanceof timer.timer, true);
-  test.equal(t.constructor.name, "Timer");
   t.stop();
   end(test);
 });
