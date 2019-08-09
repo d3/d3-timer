@@ -1,4 +1,4 @@
-import {Timer, now} from "./timer";
+import {Timer, now} from "./timer.js";
 
 export default function(callback, delay, time) {
   var t = new Timer, total = delay;
