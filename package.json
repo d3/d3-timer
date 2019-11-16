@@ -1,6 +1,6 @@
 {
   "name": "d3-timer",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "description": "An efficient queue capable of managing thousands of concurrent animations.",
   "keywords": [
     "d3",
