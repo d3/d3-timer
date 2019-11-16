@@ -4,7 +4,7 @@ This module provides an efficient queue capable of managing thousands of concurr
 
 ## Installing
 
-If you use NPM, `npm install d3-timer`. Otherwise, download the [latest release](https://github.com/d3/d3-timer/releases/latest). You can also load directly from [d3js.org](https://d3js.org), either as a [standalone library](https://d3js.org/d3-timer.v1.min.js) or as part of [D3 4.0](https://github.com/d3/d3). AMD, CommonJS, and vanilla environments are supported. In vanilla, a `d3` global is exported:
+If you use NPM, `npm install d3-timer`. Otherwise, download the [latest release](https://github.com/d3/d3-timer/releases/latest). You can also load directly from [d3js.org](https://d3js.org), either as a [standalone library](https://d3js.org/d3-timer.v1.min.js) or as part of [D3](https://github.com/d3/d3). AMD, CommonJS, and vanilla environments are supported. In vanilla, a `d3` global is exported:
 
 ```html
 <script src="https://d3js.org/d3-timer.v1.min.js"></script>
@@ -14,8 +14,6 @@ var timer = d3.timer(callback);
 
 </script>
 ```
-
-[Try d3-timer in your browser.](https://tonicdev.com/npm/d3-timer)
 
 ## API Reference
 
