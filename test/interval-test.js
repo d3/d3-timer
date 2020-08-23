@@ -74,3 +74,17 @@ tape("interval(callback) returns a timer", function(test) {
     end(test);
   }, 100);
 });
+
+tape("interval(callback).restart restarts as an interval", function(test) {
+  var then = timer.now(), delay = 50, nows = [then];
+  var callback = function() {
+    if (nows.push(timer.now()) > 10) {
+      t.stop();
+      nows.forEach(function(now, i) { test.inRange(now - then, delay * i - 10, delay * i + 10); });
+      end(test);
+    }
+  };
+  var t = timer.interval(callback, delay);
+  t.stop();
+  t.restart(callback, delay);
+});
