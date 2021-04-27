@@ -8,7 +8,7 @@ var frame = 0, // is an animation frame pending?
     clockNow = 0,
     clockSkew = 0,
     clock = typeof performance === "object" && performance.now ? performance : Date,
-    setFrame = typeof window === "object" && window.requestAnimationFrame ? window.requestAnimationFrame.bind(window) : function(f) { setTimeout(f, 17); };
+    setFrame = typeof window === "object" && window.requestAnimationFrame ? function(f) { window.requestAnimationFrame(f); } : function(f) { setTimeout(f, 17); };
 
 export function now() {
   return clockNow || (setFrame(clearNow), clockNow = clock.now() + clockSkew);
