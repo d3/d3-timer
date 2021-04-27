@@ -1,32 +1,32 @@
-var tape = require("tape"),
-    timer = require("../"),
-    end = require("./end");
+import assert from "assert";
+import * as d3 from "../src/index.js";
 
-tape("timerFlush() immediately invokes any eligible timers", function(test) {
-  var count = 0;
-  var t = timer.timer(function() { ++count; t.stop(); });
-  timer.timerFlush();
-  timer.timerFlush();
-  test.equal(count, 1);
-  end(test);
+it("timerFlush() immediately invokes any eligible timers", end => {
+  let count = 0;
+  const t = d3.timer(function() { ++count; t.stop(); });
+  d3.timerFlush();
+  d3.timerFlush();
+  assert.strictEqual(count, 1);
+  end();
 });
 
-tape("timerFlush() within timerFlush() still executes all eligible timers", function(test) {
-  var count = 0;
-  var t = timer.timer(function() { if (++count >= 3) t.stop(); timer.timerFlush(); });
-  timer.timerFlush();
-  test.equal(count, 3);
-  end(test);
+it("timerFlush() within timerFlush() still executes all eligible timers", end => {
+  let count = 0;
+  const t = d3.timer(function() { if (++count >= 3) t.stop(); d3.timerFlush(); });
+  d3.timerFlush();
+  assert.strictEqual(count, 3);
+  end();
 });
 
-tape("timerFlush() observes the current time", function(test) {
-  var start = timer.now(), foos = 0, bars = 0, bazs = 0;
-  var foo = timer.timer(function() { ++foos; foo.stop(); }, 0, start + 1);
-  var bar = timer.timer(function() { ++bars; bar.stop(); }, 0, start);
-  var baz = timer.timer(function() { ++bazs; baz.stop(); }, 0, start - 1);
-  timer.timerFlush();
-  test.equal(foos, 0);
-  test.equal(bars, 1);
-  test.equal(bazs, 1);
-  end(test);
+it("timerFlush() observes the current time", end => {
+  const start = d3.now();
+  let foos = 0, bars = 0, bazs = 0;
+  const foo = d3.timer(function() { ++foos; foo.stop(); }, 0, start + 1);
+  const bar = d3.timer(function() { ++bars; bar.stop(); }, 0, start);
+  const baz = d3.timer(function() { ++bazs; baz.stop(); }, 0, start - 1);
+  d3.timerFlush();
+  assert.strictEqual(foos, 0);
+  assert.strictEqual(bars, 1);
+  assert.strictEqual(bazs, 1);
+  end();
 });

@@ -1,55 +1,54 @@
-var tape = require("tape"),
-    timer = require("../"),
-    end = require("./end");
+import assert from "assert";
+import * as d3 from "../src/index.js";
+import {assertInRange} from "./asserts.js";
 
-require("./inRange");
-
-tape("timeout(callback) invokes the callback once", function(test) {
-  var count = 0;
-  timer.timeout(function() {
-    test.equal(++count, 1);
-    end(test);
+it("timeout(callback) invokes the callback once", end => {
+  let count = 0;
+  d3.timeout(function() {
+    assert.strictEqual(++count, 1);
+    end();
   });
 });
 
-tape("timeout(callback, delay) invokes the callback once after the specified delay", function(test) {
-  var then = timer.now(), delay = 50;
-  timer.timeout(function(elapsed) {
-    test.inRange(timer.now() - then, delay - 10, delay + 10);
-    end(test);
+it("timeout(callback, delay) invokes the callback once after the specified delay", end => {
+  const then = d3.now(), delay = 50;
+  d3.timeout(function(elapsed) {
+    assertInRange(d3.now() - then, delay - 10, delay + 10);
+    end();
   }, delay);
 });
 
-tape("timeout(callback, delay, time) invokes the callback once after the specified delay relative to the given time", function(test) {
-  var then = timer.now() + 50, delay = 50;
-  timer.timeout(function(elapsed) {
-    test.inRange(timer.now() - then, delay - 10, delay + 10);
-    end(test);
+it("timeout(callback, delay, time) invokes the callback once after the specified delay relative to the given time", end => {
+  const then = d3.now() + 50, delay = 50;
+  d3.timeout(function(elapsed) {
+    assertInRange(d3.now() - then, delay - 10, delay + 10);
+    end();
   }, delay, then);
 });
 
-tape("timeout(callback) uses the global context for the callback", function(test) {
-  timer.timeout(function() {
-    test.equal(this, global);
-    end(test);
+it.skip("timeout(callback) uses the global context for the callback", end => {
+  d3.timeout(function() {
+    assert.strictEqual(this, global);
+    end();
   });
 });
 
-tape("timeout(callback) passes the callback the elapsed time", function(test) {
-  var then = timer.now(), count = 0;
-  timer.timeout(function(elapsed) {
-    test.equal(elapsed, timer.now() - then);
-    end(test);
+it("timeout(callback) passes the callback the elapsed time", end => {
+  const then = d3.now();
+  let count = 0;
+  d3.timeout(function(elapsed) {
+    assert.strictEqual(elapsed, d3.now() - then);
+    end();
   });
 });
 
-tape("timeout(callback) returns a timer", function(test) {
-  var count = 0;
-  var t = timer.timeout(function() { ++count; });
-  test.equal(t instanceof timer.timer, true);
+it("timeout(callback) returns a timer", end => {
+  let count = 0;
+  const t = d3.timeout(function() { ++count; });
+  assert.strictEqual(t instanceof d3.timer, true);
   t.stop();
   setTimeout(function() {
-    test.equal(count, 0);
-    end(test);
+    assert.strictEqual(count, 0);
+    end();
   }, 100);
 });
