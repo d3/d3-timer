@@ -5,6 +5,10 @@
     "ecmaVersion": 8
   },
   "env": {
-    "browser": true
+    "browser": true,
+    "mocha": true
+  },
+  "rules": {
+    "no-global-assign": 0
   }
 }
