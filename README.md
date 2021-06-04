@@ -8,9 +8,11 @@ If you use npm, `npm install d3-timer`. You can also download the [latest releas
 
 ```html
 <script type="module">
+
 import {timer} from "https://cdn.skypack.dev/d3-timer@3";
 
 const t = timer(callback);
+
 </script>
 ```
 
@@ -21,6 +23,7 @@ For legacy environments, you can load d3-timer’s UMD bundle from an npm-based 
 <script>
 
 const timer = d3.timer(callback);
+
 </script>
 ```
 
@@ -37,7 +40,7 @@ Schedules a new timer, invoking the specified *callback* repeatedly until the ti
 The *callback* is passed the (apparent) *elapsed* time since the timer became active. For example:
 
 ```js
-var t = d3.timer(function(elapsed) {
+const t = d3.timer((elapsed) => {
   console.log(elapsed);
   if (elapsed > 200) t.stop();
 }, 150);
