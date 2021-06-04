@@ -1,19 +1,19 @@
 import assert from "assert";
-import * as d3 from "../src/index.js";
+import {now} from "../src/index.js";
 import {assertInRange} from "./asserts.js";
 
 it("now() returns the same time when called repeatedly", end => {
-  const now = d3.now();
-  assert(now > 0);
-  assert.strictEqual(d3.now(), now);
+  const then = now();
+  assert(then > 0);
+  assert.strictEqual(now(), then);
   end();
 });
 
 it("now() returns a different time when called after a timeout", end => {
-  const then = d3.now();
+  const then = now();
   assert(then > 0);
-  setTimeout(function() {
-    assertInRange(d3.now() - then, 50 - 5, 50 + 5);
+  setTimeout(() => {
+    assertInRange(now() - then, 50 - 10, 50 + 10);
     end();
   }, 50);
 });
