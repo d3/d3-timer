@@ -31,7 +31,7 @@ it("interval(callback, delay) invokes the callback about every delay millisecond
   const t = interval(function() {
     if (nows.push(now()) > 10) {
       t.stop();
-      nows.forEach(function(now, i) { assertInRange(now - then, delay * i - 10, delay * i + 10); });
+      nows.forEach(function(now, i) { assertInRange(now - then, delay * i - 20, delay * i + 20); });
       end();
     }
   }, delay);
@@ -79,7 +79,7 @@ it("interval(callback).restart restarts as an interval", end => {
   const callback = function() {
     if (nows.push(now()) > 10) {
       t.stop();
-      nows.forEach(function(now, i) { assertInRange(now - then, delay * i - 10, delay * i + 10); });
+      nows.forEach(function(now, i) { assertInRange(now - then, delay * i - 20, delay * i + 20); });
       end();
     }
   };
