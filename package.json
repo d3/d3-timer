@@ -1,6 +1,6 @@
 {
   "name": "d3-timer",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "An efficient queue capable of managing thousands of concurrent animations.",
   "homepage": "https://d3js.org/d3-timer/",
   "repository": {
