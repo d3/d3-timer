@@ -7,6 +7,6 @@ This module provides an efficient queue capable of managing thousands of concurr
 ## Resources
 
 - [Documentation](https://d3js.org/d3-timer)
-- [Examples](https://observablehq.com/collection/@d3/d3-timer)
+- [Examples](https://observablehq.com/@d3/-/collection/d3-timer)
 - [Releases](https://github.com/d3/d3-timer/releases)
 - [Getting help](https://d3js.org/community)
