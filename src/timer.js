@@ -101,7 +101,7 @@ function sleep(time) {
   if (timeout) timeout = clearTimeout(timeout);
   var delay = time - clockNow; // Strictly less than if we recomputed clockNow.
   if (delay > 24) {
-    if (time < Infinity) timeout = setTimeout(wake, time - clock.now() - clockSkew);
+    if (time < Infinity) timeout = setTimeout(wake, Math.ceil(time - clock.now() - clockSkew) + 1);
     if (interval) interval = clearInterval(interval);
   } else {
     if (!interval) clockLast = clock.now(), interval = setInterval(poke, pokeDelay);
