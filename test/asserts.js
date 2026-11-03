@@ -1,4 +1,4 @@
-import assert from "assert";
+import {assert} from "vitest";
 
 export function assertInRange(actual, expectedMin, expectedMax) {
   assert(expectedMin <= actual && actual <= expectedMax,
