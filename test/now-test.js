@@ -1,14 +1,14 @@
-import {assert, test} from "vitest";
+import {assert, it} from "vitest";
 import {now} from "../src/index.js";
 import {assertInRange} from "./asserts.js";
 
-test("now() returns the same time when called repeatedly", () => {
+it("now() returns the same time when called repeatedly", () => {
   const then = now();
   assert(then > 0);
   assert.strictEqual(now(), then);
 });
 
-test("now() returns a different time when called after a timeout", () => new Promise(end => {
+it("now() returns a different time when called after a timeout", () => new Promise(end => {
   const then = now();
   assert(then > 0);
   setTimeout(() => {
