@@ -1,24 +1,22 @@
-import assert from "assert";
-import {now, timer, timerFlush} from "../src/index.js";
+import {assert, it} from "vitest";
+import {now, timer, timerFlush} from "d3-timer";
 import {assertInRange} from "./asserts.js";
 
-it("timer(callback) returns an instanceof timer", end => {
+it("timer(callback) returns an instanceof timer", () => {
   const t = timer(() => {});
   assert.strictEqual(t instanceof timer, true);
   t.stop();
-  end();
 });
 
-it("timer(callback) verifies that callback is a function", end => {
+it("timer(callback) verifies that callback is a function", () => {
   assert.throws(() => { timer(); }, TypeError);
   assert.throws(() => { timer("42"); }, TypeError);
   assert.throws(() => { timer(null); }, TypeError);
-  end();
 });
 
 // It’s difficult to test the timing behavior reliably, since there can be small
 // hiccups that cause a timer to be delayed. So we test only the mean rate.
-it("timer(callback) invokes the callback about every 17ms", end => {
+it("timer(callback) invokes the callback about every 17ms", () => new Promise(end => {
   const then = now();
   let count = 0;
   const t = timer(function() {
@@ -28,9 +26,9 @@ it("timer(callback) invokes the callback about every 17ms", end => {
       end();
     }
   });
-});
+}));
 
-it("timer(callback) invokes the callback until the timer is stopped", end => {
+it("timer(callback) invokes the callback until the timer is stopped", () => new Promise(end => {
   let count = 0;
   const t = timer(function() {
     if (++count > 2) {
@@ -38,17 +36,17 @@ it("timer(callback) invokes the callback until the timer is stopped", end => {
       end();
     }
   });
-});
+}));
 
-it("timer(callback) uses the undefined context for the callback", end => {
+it("timer(callback) uses the undefined context for the callback", () => new Promise(end => {
   const t = timer(function() {
     assert.strictEqual(this, undefined);
     t.stop();
     end();
   });
-});
+}));
 
-it("timer(callback) passes the callback the elapsed time", end => {
+it("timer(callback) passes the callback the elapsed time", () => new Promise(end => {
   const then = now();
   let count = 0;
   const t = timer(function(elapsed) {
@@ -59,46 +57,45 @@ it("timer(callback) passes the callback the elapsed time", end => {
       end();
     }
   });
-});
+}));
 
-it("timer(callback, delay) first invokes the callback after the specified delay", end => {
+it("timer(callback, delay) first invokes the callback after the specified delay", () => new Promise(end => {
   const then = now(), delay = 150;
   const t = timer(function() {
     t.stop();
     assertInRange(now() - then, delay - 10, delay + 10);
     end();
   }, delay);
-});
+}));
 
-it("timer(callback, delay) computes the elapsed time relative to the delay", end => {
+it("timer(callback, delay) computes the elapsed time relative to the delay", () => new Promise(end => {
   const delay = 150;
   const t = timer(function(elapsed) {
     t.stop();
     assertInRange(elapsed, 0, 10);
     end();
   }, delay);
-});
+}));
 
-it("timer(callback, delay, time) computes the effective delay relative to the specified time", end => {
+it("timer(callback, delay, time) computes the effective delay relative to the specified time", () => new Promise(end => {
   const delay = 150, skew = 200;
   const t = timer(function(elapsed) {
     t.stop();
     assertInRange(elapsed, skew - delay + 17 - 10, skew - delay + 17 + 10);
     end();
   }, delay, now() - skew);
-});
+}));
 
-it("timer(callback) invokes callbacks in scheduling order during synchronous flush", end => {
+it("timer(callback) invokes callbacks in scheduling order during synchronous flush", () => {
   const results = [];
   const t0 = timer(function() { results.push(1); t0.stop(); });
   const t1 = timer(function() { results.push(2); t1.stop(); });
   const t2 = timer(function() { results.push(3); t2.stop(); });
   timerFlush();
   assert.deepStrictEqual(results, [1, 2, 3]);
-  end();
 });
 
-it("timer(callback) invokes callbacks in scheduling order during asynchronous flush", end => {
+it("timer(callback) invokes callbacks in scheduling order during asynchronous flush", () => new Promise(end => {
   const results = [];
   const t0 = timer(function() { results.push(1); t0.stop(); });
   const t1 = timer(function() { results.push(2); t1.stop(); });
@@ -108,11 +105,11 @@ it("timer(callback) invokes callbacks in scheduling order during asynchronous fl
     assert.deepStrictEqual(results, [1, 2, 3]);
     end();
   });
-});
+}));
 
 // Even though these timers have different delays, they are still called back in
 // scheduling order when they are simultaneously active.
-it("timer(callback, delay) invokes callbacks in scheduling order during asynchronous flush", end => {
+it("timer(callback, delay) invokes callbacks in scheduling order during asynchronous flush", () => new Promise(end => {
   const then = now();
   let results;
   const t0 = timer(function() { results = [1]; t0.stop(); }, 60, then);
@@ -123,9 +120,9 @@ it("timer(callback, delay) invokes callbacks in scheduling order during asynchro
     assert.deepStrictEqual(results, [1, 2, 3]);
     end();
   }, 100, then);
-});
+}));
 
-it("timer(callback) within a frame invokes the callback at the end of the same frame", end => {
+it("timer(callback) within a frame invokes the callback at the end of the same frame", () => new Promise(end => {
   const then = now();
   const t0 = timer(function(elapsed1, now1) {
     const delay = now() - then;
@@ -138,10 +135,10 @@ it("timer(callback) within a frame invokes the callback at the end of the same f
     }, 0, now1);
     t0.stop();
   });
-});
+}));
 
 // Note: assumes that Node doesn’t support requestAnimationFrame, falling back to setTimeout.
-it("timer(callback, delay) within a timerFlush() does not request duplicate frames", end => {
+it("timer(callback, delay) within a timerFlush() does not request duplicate frames", () => new Promise(end => {
   // A small delay before starting this test to give existing timers a chance to clear.
   setTimeout(() => {
     const setTimeout0 = setTimeout;
@@ -206,10 +203,10 @@ it("timer(callback, delay) within a timerFlush() does not request duplicate fram
     // 5. Still only one frame active!
     assert.strictEqual(frames, 1);
   }, 100);
-});
+}));
 
 // Note: assumes that Node doesn’t support requestAnimationFrame, falling back to setTimeout.
-it("timer(callback) switches to setTimeout for long delays", end => {
+it("timer(callback) switches to setTimeout for long delays", () => new Promise(end => {
   // A small delay before starting this test to give existing timers a chance to clear.
   setTimeout(() => {
     const setTimeout0 = setTimeout;
@@ -274,9 +271,9 @@ it("timer(callback) switches to setTimeout for long delays", end => {
     assert.strictEqual(frames, 1);
     assert.strictEqual(timeouts, 0);
   }, 100);
-});
+}));
 
-it("timer.stop() immediately stops the timer", end => {
+it("timer.stop() immediately stops the timer", () => new Promise(end => {
   let count = 0;
   const t = timer(function() { ++count; });
   setTimeout(function() {
@@ -284,9 +281,9 @@ it("timer.stop() immediately stops the timer", end => {
     assert.strictEqual(count, 1);
     end();
   }, 24);
-});
+}));
 
-it("timer.stop() recomputes the new wake time after one frame", end => {
+it("timer.stop() recomputes the new wake time after one frame", () => new Promise(end => {
   // A small delay before starting this test to give existing timers a chance to clear.
   setTimeout(() => {
     const setTimeout0 = setTimeout;
@@ -308,7 +305,7 @@ it("timer.stop() recomputes the new wake time after one frame", end => {
       // wake time is computed based on minimum relative time of active timers.
       assert.strictEqual(delays.length, 2);
       assert.strictEqual(delays[0], 17);
-      assertInRange(delays[1], 500 - 17 - 10, 500 - 17 + 10);
+      assertInRange(delays[1], 500 - 17 - 10, 500 - 17 + 10 + 2); // +2 for rounding up
 
       t1.stop();
 
@@ -322,7 +319,7 @@ it("timer.stop() recomputes the new wake time after one frame", end => {
 
         // 3. The alarm was reset to wake for the long-delay.
         assert.strictEqual(delays.length, 4);
-        assertInRange(delays[3], 1000 - 100 - 17 * 1.5 - 10, 1000 - 100 - 17 * 1.5 + 10);
+        assertInRange(delays[3], 1000 - 100 - 17 * 1.5 - 10, 1000 - 100 - 17 * 1.5 + 10 + 2); // +2 for rounding up
 
         t0.stop();
 
@@ -338,27 +335,26 @@ it("timer.stop() recomputes the new wake time after one frame", end => {
       }, 100);
     }, 100);
   }, 100);
-});
+}));
 
-it("timer.restart(callback) verifies that callback is a function", end => {
+it("timer.restart(callback) verifies that callback is a function", () => {
   const t = timer(function() {});
   assert.throws(function() { t.restart(); }, TypeError);
   assert.throws(function() { t.restart(null); }, TypeError);
   assert.throws(function() { t.restart("42"); }, TypeError);
   t.stop();
-  end();
 });
 
-it("timer.restart(callback) implicitly uses zero delay and the current time", end => {
+it("timer.restart(callback) implicitly uses zero delay and the current time", () => new Promise(end => {
   const t = timer(function() {}, 1000);
   t.restart(function(elapsed) {
     assertInRange(elapsed, 17 - 10, 17 + 10);
     t.stop();
     end();
   });
-});
+}));
 
-it("timer.restart(callback, delay, time) recomputes the new wake time after one frame", end => {
+it("timer.restart(callback, delay, time) recomputes the new wake time after one frame", () => new Promise(end => {
   // A small delay before starting this test to give existing timers a chance to clear.
   setTimeout(() => {
     const then = now();
@@ -377,7 +373,7 @@ it("timer.restart(callback, delay, time) recomputes the new wake time after one 
       // is computed based on its relative time.
       assert.strictEqual(delays.length, 2);
       assert.strictEqual(delays[0], 17);
-      assertInRange(delays[1], 500 - 17 - 10, 500 - 17 + 10);
+      assertInRange(delays[1], 500 - 17 - 10, 500 - 17 + 10 + 2); // +2 for rounding up
 
       t.restart(function() {}, 1000, then);
 
@@ -390,7 +386,7 @@ it("timer.restart(callback, delay, time) recomputes the new wake time after one 
 
         // 3. The alarm was reset to wake for the longer delay.
         assert.strictEqual(delays.length, 4);
-        assertInRange(delays[3], 1000 - 100 - 17 * 1.5 - 10, 1000 - 100 - 17 * 1.5 + 10);
+        assertInRange(delays[3], 1000 - 100 - 17 * 1.5 - 10, 1000 - 100 - 17 * 1.5 + 10 + 2); // +2 for rounding up
 
         t.stop();
 
@@ -406,9 +402,9 @@ it("timer.restart(callback, delay, time) recomputes the new wake time after one 
       }, 100);
     }, 100);
   }, 100);
-});
+}));
 
-it("timer.stop() immediately followed by restart() doesn’t cause an infinite loop", end => {
+it("timer.stop() immediately followed by restart() doesn’t cause an infinite loop", () => {
   const t = timer(function() {});
   let last;
   t.stop();
@@ -417,10 +413,9 @@ it("timer.stop() immediately followed by restart() doesn’t cause an infinite l
     if (elapsed === last) assert.fail("repeated invocation");
     t.stop();
   });
-  end();
 });
 
-it("timer.stop() immediately followed by restart() doesn’t cause an infinite loop (2)", end => {
+it("timer.stop() immediately followed by restart() doesn’t cause an infinite loop (2)", () => {
   const t0 = timer(function() {}), t1 = timer(function() {});
   let last;
   t0.stop();
@@ -430,10 +425,9 @@ it("timer.stop() immediately followed by restart() doesn’t cause an infinite l
     t0.stop();
   });
   t1.stop();
-  end();
 });
 
-it("timer.stop() clears the internal _next field after a timeout", end => {
+it("timer.stop() clears the internal _next field after a timeout", () => new Promise(end => {
   const t0 = timer(function() {}), t1 = timer(function() {});
   t0.stop();
   setTimeout(function() {
@@ -441,4 +435,4 @@ it("timer.stop() clears the internal _next field after a timeout", end => {
     t1.stop();
     end();
   }, 100);
-});
+}));
