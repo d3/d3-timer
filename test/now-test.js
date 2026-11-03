@@ -1,5 +1,5 @@
 import {assert, it} from "vitest";
-import {now} from "../src/index.js";
+import {now} from "d3-timer";
 import {assertInRange} from "./asserts.js";
 
 it("now() returns the same time when called repeatedly", () => {

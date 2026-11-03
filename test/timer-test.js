@@ -1,5 +1,5 @@
 import {assert, it} from "vitest";
-import {now, timer, timerFlush} from "../src/index.js";
+import {now, timer, timerFlush} from "d3-timer";
 import {assertInRange} from "./asserts.js";
 
 it("timer(callback) returns an instanceof timer", () => {

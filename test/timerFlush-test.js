@@ -1,5 +1,5 @@
 import {assert, it} from "vitest";
-import {now, timer, timerFlush} from "../src/index.js";
+import {now, timer, timerFlush} from "d3-timer";
 
 it("timerFlush() immediately invokes any eligible timers", () => {
   let count = 0;

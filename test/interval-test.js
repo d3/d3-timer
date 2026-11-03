@@ -1,5 +1,5 @@
 import {assert, it} from "vitest";
-import {interval, now, timer} from "../src/index.js";
+import {interval, now, timer} from "d3-timer";
 import {assertInRange} from "./asserts.js";
 
 // It’s difficult to test the timing behavior reliably, since there can be small

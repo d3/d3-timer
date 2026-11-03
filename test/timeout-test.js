@@ -1,5 +1,5 @@
 import {assert, it} from "vitest";
-import {now, timeout, timer} from "../src/index.js";
+import {now, timeout, timer} from "d3-timer";
 import {assertInRange} from "./asserts.js";
 
 it("timeout(callback) invokes the callback once", () => new Promise(end => {
