@@ -44,7 +44,7 @@
     "rollup": "^4.67.4"
   },
   "scripts": {
-    "test": "mocha --require test/setup.js 'test/**/*-test.js' && eslint src test",
+    "test": "mocha --exit --require test/setup.js 'test/**/*-test.js' && eslint src test",
     "prepublishOnly": "rm -rf dist && rollup -c"
   },
   "engines": {

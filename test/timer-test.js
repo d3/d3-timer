@@ -308,7 +308,7 @@ it("timer.stop() recomputes the new wake time after one frame", end => {
       // wake time is computed based on minimum relative time of active timers.
       assert.strictEqual(delays.length, 2);
       assert.strictEqual(delays[0], 17);
-      assertInRange(delays[1], 500 - 17 - 10, 500 - 17 + 10);
+      assertInRange(delays[1], 500 - 17 - 10, 500 - 17 + 10 + 2); // +2 for rounding up
 
       t1.stop();
 
@@ -322,7 +322,7 @@ it("timer.stop() recomputes the new wake time after one frame", end => {
 
         // 3. The alarm was reset to wake for the long-delay.
         assert.strictEqual(delays.length, 4);
-        assertInRange(delays[3], 1000 - 100 - 17 * 1.5 - 10, 1000 - 100 - 17 * 1.5 + 10);
+        assertInRange(delays[3], 1000 - 100 - 17 * 1.5 - 10, 1000 - 100 - 17 * 1.5 + 10 + 2); // +2 for rounding up
 
         t0.stop();
 
@@ -377,7 +377,7 @@ it("timer.restart(callback, delay, time) recomputes the new wake time after one 
       // is computed based on its relative time.
       assert.strictEqual(delays.length, 2);
       assert.strictEqual(delays[0], 17);
-      assertInRange(delays[1], 500 - 17 - 10, 500 - 17 + 10);
+      assertInRange(delays[1], 500 - 17 - 10, 500 - 17 + 10 + 2); // +2 for rounding up
 
       t.restart(function() {}, 1000, then);
 
@@ -390,7 +390,7 @@ it("timer.restart(callback, delay, time) recomputes the new wake time after one 
 
         // 3. The alarm was reset to wake for the longer delay.
         assert.strictEqual(delays.length, 4);
-        assertInRange(delays[3], 1000 - 100 - 17 * 1.5 - 10, 1000 - 100 - 17 * 1.5 + 10);
+        assertInRange(delays[3], 1000 - 100 - 17 * 1.5 - 10, 1000 - 100 - 17 * 1.5 + 10 + 2); // +2 for rounding up
 
         t.stop();
 
